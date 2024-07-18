@@ -1,0 +1,368 @@
+# Model Assumptions {#sec-model-assumptions}
+
+```{r}
+#| echo: false
+source("_common.R")
+```
+
+::: {.callout-tip}
+## Goals
+
+* State and assess the assumptions of a spatial linear model.
+* Explain how a spatial linear model can accommodate non-linear trends and skewed response variables.
+:::
+
+The goal of this section is to discuss the standard assumptions of the spatial linear model and to assess how reasonable these assumptions seem with plots. Throughout, we will use the `spmodel`, `sf`, `spData`, `tidyverse` and `broom` packages:
+
+```{r}
+#| warning: false
+#| output: false
+library(spmodel)
+library(sf)
+library(spData)
+library(tidyverse)
+library(broom)
+theme_set(theme_minimal()) ## set the default theme
+```
+
+We will again use the baltimore housing data set from the `spData` package. Recall that this data set contains information on 211 house prices in the baltimore area in the year 1978. Variables in the data set include:
+
+* `PRICE`, the price of the home, in thousands of dollars.
+* `AGE`, the age of the house, in years.
+* `SQFT`, the square footage of the house, in hundreds of square feet.
+* `X`, the x-coordinate location of the home (with an unknown projection).
+* `Y`, the y-coordinate location of the home (with an unknown projection).
+
+We again convert the `baltimore` data frame object to an `sf` object with:
+
+```{r}
+baltimore_sf <- baltimore |> st_as_sf(coords = c("X","Y"), remove = FALSE)
+baltimore_sf
+```
+
+## Model Assumptions
+
+For spatial linear models, we must make some assumptions about the underlying model generating our data. What are these assumptions, and how can we check these assumptions given our observed sample of data? All of the assumptions are embedded into the spatial linear model formula:
+
+$$
+Y_i = \beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \ldots + \beta_p x_{pi} + \epsilon_i + \tau_i,
+$${#eq-splm}
+
+
+where 
+
+* $\epsilon_i$ is normally distributed with mean `0`, variance $\sigma^2_{ie}$, and $\epsilon_i$ is independent of $\epsilon_j$ for all $i \neq j$.
+* $\tau_i$ is normally distributed with mean `0`, variance $\sigma^2_{de}$, and can have covariance with $\tau_j$. The covariance of $\tau_i$ and $\tau_j$ can be modeled with a covariance function, like the exponential, gaussian, etc, that depends only on the distance $h_{ij}$ between observations $i$ and $j$.
+
+Here, we will also define $\delta_i \equiv \epsilon_i + \tau_i$ to encompass the entire random error. Because $\epsilon_i$ and $\tau_i$ are independent, the mean of $\delta_i$ is equal to 0, the variance of $\delta_i$ is equal to $\sigma^2 \equiv \sigma_{ie}^2 + \sigma_{de}^2$, and the covariance of $\delta_i$ with $\delta_j$ ($i \neq j$) with an exponential correlation function is equal to $\sigma_{de}^2 e^{-h_{ij} / \phi}$, where $h_{ij}$ is the distance between locations $i$ and $j$ and $\phi$ is the range parameter.
+
+Embedded within this spatial linear model formula are the assumptions of:
+
+1. Linearity
+
+2. Stationarity and Isotropy
+
+3. Normality
+
+We examine each of these assumptions in turn here.
+
+### Linearity
+
+First, like in regression models with independent random errors, we still assume that the "mean structure" of the model is __linear__ with respect to the $\beta$ coefficients. The most common structure for the mean of the response $Y_i$, which we will denote as $\mu_i$, is: $\beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \ldots + \beta_p x_{pi}$.
+
+However, spatial linear models can still easily accommodate non-linear trends as long as the mean structure is linear in the $\beta$ coefficients. For example,
+
+* $\mu_i = \beta_0 + \beta_1 x_{1i}^2$,
+
+* $\mu_i = \beta_0 + \beta_1 log(x_{1i}) + \beta_2 \sqrt{x_{2i}}$,
+
+* $\mu_i = \beta_1 x_{1i} + \beta_2 x_{2i} + \beta_3 x_{1i} x_{2i}$
+
+are all linear models in that they are linear in the $\beta_i$ coefficients. An example of a non-linear mean structure for a model is $\mu_i = \beta_0 + \beta_1e^{-x_{1i}/\beta_2}$ because this cannot be re-written to be linear in the $\beta_i$ coefficients. Additive models and splines are other examples of methods that can be used within the spatial linear model framework.
+
+The most common plot to assess whether the linearity assumption is valid for a particular model is to plot the _standardized residuals_ vs. the _fitted values_ and look to make sure there is no strong curvature in the plot. The _fitted values_ are defined as $\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1x_{i1} + \hat{\beta}_2x_{i2} + \ldots + \hat{\beta}_p x_{ip}$. While the "non-standardized" residuals are $e_i = y_i - \hat{y}_i$, the standardized residuals are scaled so that they have a mean of 0 and a variance equal to 1.
+
+As an example, we fit a spatial linear model with the spherical covariance function and with `NROOM`, `NBATH`, `SQFT`, `LOTSZ`, and `AGE` as predictors in the model.
+
+```{r}
+mod_lin <- splm(PRICE ~ NROOM + NBATH + SQFT + LOTSZ,
+                data = baltimore_sf, spcov_type = "spherical")
+```
+
+To obtain the __standardized residuals__ and the __fitted values__ for the model, we `augment()` `mod_lin`.
+
+```{r}
+mod_lin_aug <- augment(mod_lin)
+mod_lin_aug
+```
+
+The fitted values are given in a column called `.fitted` while the standardized residuals are given in a column called `.std.resid`. Then, we can construct a plot of the standardized residuals vs. fitted values with:
+
+```{r}
+ggplot(data = mod_lin_aug, aes(x = .fitted, y = .std.resid)) +
+  geom_point()
+```
+
+There is not any major curvature in this plot: therefore, there is no major evidence that the linearity assumption has been violated for this model. 
+
+### Stationarity
+
+Next, we typically assume a type of stationarity in our model. If the stationarity assumption is valid, then we would expect the variance of $\delta_i$ to be similar at all values of the predictor variables. That is, we assume that all $\delta_i$ have the same overall variance: $\sigma^2 \equiv \sigma_{de}^2 + \sigma_{ie}^2$.
+
+We also assume that the covariance between $\delta_i$ and $\delta_j$ is a function of the distance between the locations $i$ and $j$ only. We can relax this assumption and assume that the covariance is a function of both distance and direction between the locations $i$ and $j$ by fitting an _anisotropic_ model. However, in this section, we only consider isotropic models for which the covariance is only a function of distance.
+
+To assess whether it is reasonable to assume that the random errors all have the same variance $\sigma^2$, we can again use the plot of the standardized residuals vs. the fitted values. 
+
+```{r}
+ggplot(data = mod_lin_aug, aes(x = .fitted, y = .std.resid)) +
+  geom_point()
+```
+
+From this plot, we see that there is some mild evidence against this assumption. For predicted $\hat{y}_i$ that are small, there is less overall variability in the standardized residuals. On the other hand, for large fitted values, there is a bit more overall variability in the standardized residuals. However, this is not a drastic pattern: some may look at this plot and say that the assumption of constant variance seems reasonable while others might not be satisfied with that particular assumption.
+
+Assessing whether or not it is reasonable to assume that spatial covariance is based only on distance and that the chosen covariance function is reasonable is a much harder task visually. With larger data sets, we could split the data up into 4 "quadrants" and fit a spatial model separately for each quadrant. If the covariance structure does not change across space, then we would expect to get similar covariance structures in each of the 4 quadrants. But, with many examples, such as this one, we do not have enough data (211 observations here) to perform this check.
+
+::: {.callout-important}
+
+Importantly, the assumptions we have are much easier to think about in terms of the random errors, not in terms of the response variable itself.
+:::
+
+When we introduced spatial covariance in @sec-spatial-covariance, we did so in terms of a response variable of interest. However, after we introduce predictor variables into the model, we are now thinking about this covariance as being a structure placed on the random errors in the model. We might wind up with __really__ different fitted covariance functions for a model placed on the response variable (with no predictors) than for a model placed on the random errors with predictors included in the mean structure of the model. 
+
+For example, consider again the baltimore housing data set. We can plot the response variable, `PRICE` and observe that there is substantial spatial correlation in the `PRICE` variable:
+
+```{r}
+ggplot(data = baltimore_sf, aes(colour = PRICE)) +
+  geom_sf() +
+  scale_colour_viridis_c() +
+  theme_void()
+```
+
+And, a fitted covariance model for `PRICE` using a spherical covariance function with no predictors in the mean structure of the model is:
+
+```{r}
+#| echo: false
+mod_nopred <- splm(PRICE ~ 1, data = baltimore_sf, spcov_type = "spherical")
+spcoefs_nopred <- coef(mod_nopred, type = "spcov")
+
+make_cov_df <- function(p_sill = 1, nugget = 0, range = 0.5, max_dist = 2,
+                        spcov_type = "exponential") {
+  
+  distance_grid <- seq(0.00, max_dist, length.out = 500)
+  
+  corr_nunugg <- switch(spcov_type,
+                        exponential = exp(-(distance_grid / range)),
+                        gaussian = exp(-(distance_grid / range) ^ 2),
+                        spherical = ifelse(distance_grid <= range,
+                                           (1 - 1.5 * distance_grid / range + 0.5 * (distance_grid / range)^2),
+                                           0),
+                        triangular = ifelse(distance_grid <= range,
+                                            (1 - (distance_grid / range)),
+                                            0)
+  )
+  
+  cov_df <- tibble(distance_grid, corr_nunugg) |>
+    mutate(cov_nunugg = p_sill * corr_nunugg,
+           cov_full = if_else(distance_grid == 0,
+                              true = cov_nunugg + nugget,
+                              false = cov_nunugg),
+           cov_type = spcov_type) |>
+    select(-corr_nunugg, -cov_nunugg)
+  
+  return(cov_df)
+}
+
+cov_nopreds <- make_cov_df(p_sill = spcoefs_nopred[1], nugget = spcoefs_nopred[2],
+                            range = spcoefs_nopred[3], max_dist = 128,
+            spcov_type = "spherical")
+ggplot(data = cov_nopreds |> filter(distance_grid != 0),
+       aes(x = distance_grid, y = cov_full)) +
+  geom_line() +
+  geom_point(data = cov_nopreds |> filter(distance_grid == 0)) +
+  labs(x = "Distance", y = "Covariance") +
+  ylim(0, NA)
+```
+
+We see that there is a large amount of spatial covariance estimated. However, when we introduce predictors into our model, we model the __random errors__ ($\delta_i$) with the chosen spatial covariance function. Doing so can drastically change the estimated covariance parameters:
+
+```{r}
+#| echo: false
+mod_pred <- splm(PRICE ~ NROOM + NBATH + SQFT + LOTSZ,
+                   data = baltimore_sf, spcov_type = "spherical")
+spcoefs_pred <- coef(mod_pred, type = "spcov")
+
+cov_preds <- make_cov_df(p_sill = spcoefs_pred[1], nugget = spcoefs_pred[2],
+                            range = spcoefs_pred[3], max_dist = 128,
+            spcov_type = "spherical")
+
+cov_plot <- bind_rows(cov_nopreds, cov_preds, .id = "id") |>
+  mutate(id = fct_recode(id, "no_preds" = "1",
+                         "predictors" = "2"))
+ggplot(data = cov_plot |> filter(distance_grid != 0),
+       aes(x = distance_grid, y = cov_full, colour = id)) +
+  geom_line() +
+  geom_point(data = cov_plot |> filter(distance_grid == 0)) +
+  labs(x = "Distance", y = "Covariance") +
+  ylim(0, NA) +
+  scale_colour_viridis_d(end = 0.9)
+```
+
+In the plot above, we see that, when modeling `PRICE` with no predictors, there is more overall variability (a larger covariance when distance is equal to 0) and that, in general, the covariance between `PRICE` random variables is larger. On the other hand, when we introduce predictors into the model, some of the variability in `PRICE` is accounted for (or explained) by these predictors. Therefore, we see that the fitted covariance curve is generally lower at all values of distance compared to the curve for the model with no predictors. 
+
+<!-- When making a spatial plot of the residuals of this model, we do see that, while the residuals still display evidence of spatial correlation (and so a spatial model is still useful here), there is a bit less spatial patterning in these residuals than there is when looking at `PRICE` on its own. -->
+
+```{r}
+#| echo: false
+#| output: false
+ggplot(data = mod_pred |> augment(), aes(colour = .resid)) +
+  geom_sf() +
+  scale_colour_viridis_c() +
+  theme_void()
+```
+
+<!-- In fact, as we will see in REFERENCE EXERCISE, it is entirely possible to observe a lot of spatial correlation in a response variable, but, particularly when a predictor variable is spatially patterned itself, we might observe that the errors in a model for the spatially patterned response variable display little correlation. -->
+
+### Normality
+
+Finally, we also assume that the random errors in the model are _normally distributed_. 
+
+::: {.callout-important}
+
+The assumption here is that the errors are normally distributed. Especially if the distribution of one or more of the predictors is very skewed, then it is entirely possible for a histogram of the response to look very skewed but for a histogram of the residuals to look approximately normally distributed.
+:::
+
+To assess this assumption, we can construct a histogram of the standardized residuals.
+
+```{r}
+ggplot(data = mod_lin_aug, aes(x = .std.resid)) +
+  geom_histogram(colour = "black", fill = "white", bins = 15)
+```
+
+We see that the histogram of residuals is approximately symmetric and that there is one fairly extreme outlier with a standardized residual equal to 6. 
+
+Note that if we construct a histogram of the response variable, `PRICE`, we observe some right-skewness. 
+
+```{r}
+ggplot(data = baltimore_sf, aes(x = PRICE)) +
+  geom_histogram(colour = "black", fill = "white", bins = 15)
+```
+
+The reason that we can see skewness in the response variable but not in the residuals is that, for the histogram of the residuals, we are taking into account the effects of the predictors. A simple linear regression example can help illustrate this. In the toy example below, we see that the observed distribution of the toy response variable, $y$, is clearly right-skewed.
+
+```{r}
+set.seed(5142141)
+x <- rexp(100, 1)
+y <- 2 + 4 * x + rnorm(100, 0, 1)
+toy_df <- tibble(x, y)
+ggplot(data = toy_df, aes(x = y)) +
+  geom_histogram(colour = "black", fill = "white", bins = 15)
+```
+
+The reason for this right-skewness is that there are many small $x$ values but not very many observed large $x$ values:
+
+```{r}
+ggplot(data = toy_df, aes(x = x, y = y)) +
+  geom_point()
+```
+
+After we account for $x$ in the model, we obtain a symmetric distribution of the standardized model residuals, satisfying the normality assumption even though the observed histogram of $y$ is right-skewed.
+
+```{r}
+toy_mod <- lm(y ~ x, data = toy_df)
+toy_resid <- augment(toy_mod)
+ggplot(data = toy_resid, aes(x = .std.resid)) +
+  geom_histogram(colour = "black", fill = "white", bins = 15)
+```
+
+Again, we only care about normality of the random errors, so as long as the histogram of the residuals is not very skewed, the normality assumption is satisfied.
+
+Normality of the random errors is most important for constructing __prediction intervals__ for the response at unsampled spatial locations. For other types of inference, including hypothesis tests and confidence intervals on the $\beta$ coefficients and confidence intervals for the mean response at a sampled or unsampled spatial location, mild violations of normality are okay for large sample sizes because of the Central Limit Theorem.
+
+### Randomness
+
+In the discussion of assumptions above, a "random selection" of spatial locations is not mentioned. Random selection of spatial locations is _not_ a strict assumption for fitting and interpreting a spatial model. Often, randomly selecting spatial locations to sample in a study area is not feasible anyway, as sampling on private land or on certain terrain may be illegal or impossible.
+
+While randomness is not a strict assumption for a spatial model, how spatial locations are selected can influence the scope of inference. As an extreme example, we would not want to measure pollutant concentration in a sample of lakes in Minnesota and make subsequent inference to all lakes in the United States. As a less extreme example, we would not want to measure pollutant concentration in only the largest lakes in Minnesota and make subsequent inference to all lakes in Minnesota.
+
+## Addressing Violated Assumptions
+
+We now turn our attention to addressing violated assumptions. Most of the strategies discussed here substantially overlap with strategies used to address violated assumptions for linear models with independent random errors.
+
+### Adjusting the Mean Structure
+
+Sometimes the assumptions of a linear model are violated because the mean structure of the model is either missing an important predictor or is mis-specified in some other way. To remedy this issue, we can add in the important predictor to the mean structure of the model, or we can transform a predictor that is already in the model (e.g., with the log transformation, square root transformation, etc.).
+
+We have actually already seen this in the toy example given for the normality assumption. With no predictors in the model, we saw that normality was violated. However, after we introduced the predictor $x$ into the mean structure of the model, the residuals no longer appeared skewed.
+
+As another example, suppose that we fit a spatial linear model to the baltimore housing data set with `PRICE` as the response and `SQFT` as the only predictor. Making a plot of the standardized residuals vs. the fitted values, we see that there is a strong violation of the "constant variance" part of the stationarity assumption.
+
+```{r}
+mod_one <- splm(PRICE ~ SQFT,
+                data = baltimore_sf, spcov_type = "spherical")
+mod_one_aug <- augment(mod_one)
+mod_one_aug
+
+ggplot(data = mod_one_aug, aes(x = .fitted, y = .std.resid)) +
+  geom_point()
+```
+
+Adding back in the other predictors (`NROOM`, `NBATH`, `LOTSZ`) and fitting the model with all four of these predictors gives a plot that shows a more mild violation of the constant variance assumption:
+
+```{r}
+ggplot(data = mod_lin_aug, aes(x = .fitted, y = .std.resid)) +
+  geom_point()
+```
+
+### Transforming the Response
+
+In the previous example, adding in the other predictors to the mean structure of the model helps the constant variance assumption. But, the plot of the standardized residuals vs. the fitted values still shows a mild departure from this assumption. If we think that this is cause for concern, we can transform the response variable. From such a transformation, we typically gain confidence in the model assumptions on the transformed response compared to the untransformed response. However, we typically lose interpretability of the model, as interpreting the estimated $\hat{\beta}_j$ coefficients with a transformed response is much more challenging.
+
+As an example, we can use the square root function to transform the `PRICE` variable in the spatial linear model with all 4 predictors.
+
+```{r}
+mod_trans <- splm(sqrt(PRICE) ~ NROOM + NBATH + SQFT + LOTSZ,
+                data = baltimore_sf, spcov_type = "spherical")
+mod_trans_aug <- augment(mod_trans)
+
+ggplot(data = mod_trans_aug, aes(x = .fitted, y = .std.resid)) +
+  geom_point()
+```
+
+We see that the constant variance part of the stationarity assumption is more reasonable when modeling the square root of `PRICE` instead of `PRICE` directly.
+
+### Adjusting the Error Structure
+
+The strategies above (adjusting the mean structure and transforming the response) are applied to remedying model assumptions in many contexts outside of spatial statistics. We can also consider modifying the structure for the random errors in the model.
+
+The most common method of adjusting the error structure in spatial models is to change the correlation function used. Thus far, we have only mentioned the exponential, spherical, gaussian, and triangular correlation functions (all of which use __3__ parameters), but, there are many others. One of the more popular functions that we have not mentioned is the Matern correlation function, which uses __4__ parameters: the partial sill, nugget, range, and an "extra" parameter that controls the "smoothness" of the correlation function.
+
+Changing the correlation function used to model the random errors may help with the stationarity assumption and the normality assumption of these errors. So, which correlation function is "correct" to use in a particular situation? That question can be quite challenging to answer. For many data sets, many of the commonly used spatial covariance functions will yield similar inferences on the fixed effect ($\beta_j$) coefficients. 
+
+Perhaps the most common method to choose a spatial covariance function is to use a model selection criterion like the AIC. For example, in the code below, we fit models with the `exponential`, `gaussian`, `spherical`, `matern`, and `none` covariance structures.
+
+```{r}
+many_mods <- splm(PRICE ~ NROOM + NBATH + SQFT + LOTSZ,
+                data = baltimore_sf,
+                spcov_type = c("exponential", "gaussian", "spherical",
+                               "matern", "none"))
+glances(many_mods)
+```
+
+We observe something common in spatial analysis here: choosing to use a spatial covariance function in the first place is much more important than which particular covariance function is chosen. In other words, we see that the model with `none` covariance has a much higher AIC than the other models: this model clearly provides the worst fit to the data of the 5 chocies. Then, while the `spherical` and `exponential` slightly outperform the `gaussian` and `matern` for this example, all four remaining models have similar AIC values. Additionally, if we examine the model summary output for some of the models with
+
+```{r}
+many_mods[[3]] |> tidy() ## spherical
+many_mods[[4]] |> tidy() ## matern
+```
+
+we see that the estimated coefficients and p-values for inference are quite similar in all of the models with a spatial covariance function.
+
+Other modifications that we can make to the error structure of the model include:
+
+* adding `anisotropy` so that covariance depends on both direction and distance.
+* adding non-spatial random effects with `random` to accommodate for things like repeated measurements at the same spatial location.
+* adding in a partition factor with `partition_factor` to force observations in different levels of the partition factor to be uncorrelated, no matter how far apart they are in space.
+
+While all of these are possible to fit with `spmodel` (via the `anisotropy`, `random`, and `partition_factor` arguments to `splm()`), we do not explore these further in these materials. Instead, <https://usepa.github.io/spmodel/articles/guide.html> gives some examples on how to incorporate these more advanced modeling features into a spatial model.
+
+

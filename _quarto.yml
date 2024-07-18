@@ -1,0 +1,37 @@
+project:
+  type: book
+
+book:
+  title: "Introduction to Spatial Modeling with spmodel"
+  reader-mode: true
+  page-footer:
+    left: |
+      Materials for use in conjunction with the `spmodel` R package.
+    right: |
+      This book was built with <a href="https://quarto.org/">Quarto</a>.
+  chapters:
+    - index.qmd
+    - part: Spatial Modeling with `spmodel`
+      chapters:
+      - data-exploration.qmd
+      - spatial-covariance.qmd
+      - point-modeling.qmd
+      - model-assumptions.qmd
+      - prediction.qmd
+      - logistic-modeling.qmd
+      - areal-modeling.qmd
+    # - part: Appendix
+    #   chapters:
+    #   - lm_matrix.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - ds234.scss
+
+
+
+

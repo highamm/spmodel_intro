@@ -1,0 +1,277 @@
+# Spatial Logistic Regression {#logistic-modeling}
+
+```{r}
+#| echo: false
+source("_common.R")
+```
+
+::: {.callout-tip}
+## Goals
+
+* Identify an appropriate situation to use a spatial logistic regression model.
+* Fit and interpret a spatial logistic regression model.
+* Find a predicted probability at an unobserved spatial location.
+:::
+
+We now turn our attention to spatial modeling of a __binary__ response variable: a categorical response variable that has exactly two levels. We model a binary response variable with a spatial extension of __logistic regression__. 
+
+Throughout this section, we will use the `spmodel`, `sf`, and `tidyverse` packages:
+
+```{r}
+#| warning: false
+#| output: false
+library(spmodel)
+library(sf)
+library(tidyverse)
+theme_set(theme_minimal()) ## set the default theme
+```
+
+## Data Introduction: Moose Data
+
+The `moose` data set from the `spmodel` package contains information on 218 spatial locations in Alaska. For each location, we have the following variables:
+
+* `elev`, the elevation at the spatial location.
+* `strat`, a pre-survey stratification variable that is either `L` (Low) or `M` (Medium).
+* `presence`, whether or not moose were present at that location (`0` for absent and `1` for present).
+* `geometry`, a point-level geometry column giving the x and y coordinates of each spatial location.
+
+```{r}
+moose
+```
+
+Our goal is to construct a spatial model for moose `presence`, perhaps using `elev` and `strat` as predictors in the model. Note that, because `presence` is binary (moose are either present or absent), a spatial model with normally distributed random errors is not appropriate. But, before we get into any modeling, we first construct a plot of the data:
+
+```{r}
+ggplot(data = moose, aes(colour = presence)) +
+  geom_sf() +
+  theme_void() +
+  scale_colour_viridis_d()
+```
+
+We see from this plot that there are slightly more locations with moose present than there are with moose absent. And, there appears to be some evidence of spatial correlation: locations that are near each other in space seem to be more similar than locations that are further apart. We also clearly see that the sampled locations were not randomly selected, as there are a lot of locations in the eastern part of the plot. Recall from @sec-model-assumptions that random selection of sites is not a strict assumption for the spatial model. If wildlife managers are most interested in the eastern region of the study area, it is perfectly reasonable to concentrate more samples in that region.
+
+## Non-spatial Logistic Background
+
+Because `presence` is binary, let's define $Y_i$ as
+
+$$
+Y_i = 
+\begin{cases}
+1, \text{ moose are present at location i} \\
+0, \text{ moose are absent at location i}
+\end{cases}
+$$ {#eq-bernoulli}
+
+$Y_i$ is often called a __Bernoulli random variable__: a variable that takes on a `1` with a certain probability $\pi$ and a `0` with probability $1 - \pi$. Note that fitting a spatial model from @sec-point-modeling no longer makes sense here: if the errors are normally distributed, then the right-hand side of the modeling equation in the form of @eq-splm cannot be equal to only the values `0` or `1`.
+
+In a non-spatial context, we can fit a standard logistic regression model for the binary response variable `presence`. To do so, we model the __log odds__ that moose are present:
+
+$$
+\text{logodds}(\pi_i) = \text{log}\left(\frac{\pi_i}{1 - \pi_i}\right) = \beta_0 + \beta_1 elev_i + \beta_2 strat_i,
+$${#eq-logind}
+
+where $\pi_i$ is the probability that $Y_i$ is equal to 1 (and therefore, moose are present at location $i$) and $elev_i$ and $strat_i$ are the elevation and stratum for location $i$. 
+
+Fitting this non-spatial model in `R`, we can use the `glm()` function with the `"binomial"` family:
+
+```{r}
+mod_nonspatial <- glm(presence ~ elev + strat, data = moose, family = "binomial")
+mod_nonspatial |> summary()
+```
+
+Interpretations of these coefficients are all on the log odds scale. For example, we estimate that the log odds of moose being present on a medium stratum site is 0.807 units more than the log odds of moose being present on a low stratum site, holding elevation constant. Or, we can interpret $e^{0.807} = 2.24$ on the odds scale: we estimate that the odds of moose being present on a medium stratum site are 2.24 times the odds of moose being present on a low stratum site. Because most people have a much easier time thinking about probabilities than they do odds or log odds, these interpretations are only mildly useful.
+
+## Spatial Logistic Regression
+
+The model above assumes that, after accounting for the `elev` and `strat` predictors, the bernoulli response variables are spatially independent. How can we extend this model to allow for spatial correlation? We simply add the appropriate error terms from @eq-splm in @sec-point-modeling to @eq-logind. In doing so, we model spatial correlation __on the log odds scale__:
+
+$$
+\text{logodds}(\pi_i) = \text{log}\left(\frac{\pi_i}{1 - \pi_i}\right) = \beta_0 + \beta_1 elev_i + \beta_2 strat_i + \tau_i + \epsilon_i,
+$${#eq-logspatial}
+
+where 
+
+* $\epsilon_i$ has mean 0, variance $\sigma^2_{ie}$ and the correlation between $\epsilon_i$ and $\epsilon_j$ is equal to 0 for all $i \neq j$,
+* $\tau_i$ has mean 0, variance $\sigma^2_{de}$, and the correlation between $\tau_i$ and $\tau_j$ can be modeled with a spatial correlation function, like the exponential, gaussian, etc.
+* all $\tau$'s are independent of all $\epsilon$'s.
+
+Again, the spatial covariance is modeled on the log odds scale, __not__ on the response scale. Therefore, it is __incorrect__ to say that 
+
+$$
+\text{cov}(Y_i, Y_j) = \text{cov}(\epsilon_i, \epsilon_j) + \text{cov}(\tau_i, \tau_j).
+$$
+
+Instead, we model the spatial correlation on the log odds scale (with an exponential correlation function in the equation below):
+
+$$
+\text{cov}\left(\text{log}\left(\frac{\pi_i}{1 - \pi_i}\right), \text{log}\left(\frac{\pi_j}{1 - \pi_j}\right)\right) = \text{cov}(\epsilon_i, \epsilon_j) + \text{cov}(\tau_i, \tau_j) = 
+\begin{cases}
+\sigma_{ie}^2 + \sigma_{de}^2 e^{\frac{-h_{ij}}{\phi}}, & h_{ij} = 0\\
+\sigma_{de}^2 e^{\frac{-h_{ij}}{\phi}}, & h_{ij} > 0
+\end{cases}
+$$
+
+As we can see from the equation above, modeling the spatial covariance on the log odds scale makes interpretation of the estimated covariance parameters tougher. We can still construct a spatial covariance plot to assess how covariance decays with distance, but the raw values of covariance are a lot harder to understand: these are on the log-odds scale now, which is not as easy to think about as the response variable scale was in @sec-point-modeling.
+
+Before we discuss interpretations, let's fit the model with the `spglm()` function. Note that the syntax of `spglm()` is identical to that of `glm()`, except that we add an extra argument to specify the `spcov_type` we want to use:
+
+```{r}
+mod_spatial <- spglm(presence ~ elev + strat, data = moose, family = "binomial",
+                     spcov_type = "exponential")
+mod_spatial |> summary()
+```
+
+We can interpret the estimated fixed effects in a similar fashion to how they are interpreted in the standard logistic regression model. For example, we estimate that the log odds of moose presence on a medium stratum site are 1.44 units higher than the log odds of moose presence on a low stratum site, holding elevation constant. Or, the odds of moose presence on a medium stratum site are estimated to be $e^{1.44} = 4.22$ times higher than the odds of moose presence on a low stratum site, holding elevation constant. There is also strong evidence of an association between stratum and moose presence (p-value = 0.000622) while there is only marginal evidence of association between elevation and moose presence (p-value = 0.087).
+
+In the summary output, we can also obtain estimates of the spatial covariance parameters: $\hat{\sigma}^2_{de} = 5.145$, $\hat{\sigma}^2_{ie} = 0.001294$, and $\hat{\phi} = 41990$. A plot of the covariance on the log odds scale is given below.
+
+```{r}
+#| echo: false
+make_cov_df <- function(p_sill = 1, nugget = 0, range = 0.5, max_dist = 2,
+                        spcov_type = "exponential") {
+  
+  distance_grid <- seq(0.00, max_dist, length.out = 200)
+  
+  corr_nunugg <- switch(spcov_type,
+                        exponential = exp(-(distance_grid / range)),
+                        gaussian = exp(-(distance_grid / range) ^ 2),
+                        spherical = ifelse(distance_grid <= range,
+                                           (1 - 1.5 * distance_grid / range + 0.5 * (distance_grid / range)^2),
+                                           0),
+                        triangular = ifelse(distance_grid <= range,
+                                            (1 - (distance_grid / range)),
+                                            0)
+  )
+  
+  cov_df <- tibble(distance_grid, corr_nunugg) |>
+    mutate(cov_nunugg = p_sill * corr_nunugg,
+           cov_full = if_else(distance_grid == 0,
+                              true = cov_nunugg + nugget,
+                              false = cov_nunugg),
+           cov_type = spcov_type) |>
+    select(-corr_nunugg, -cov_nunugg)
+  
+  return(cov_df)
+}
+
+plot_nugg <- make_cov_df(p_sill = 5.145, nugget = 0.001294, range = 41990,
+                             max_dist = 150000, spcov_type = "exponential")
+ggplot(data = plot_nugg |> filter(distance_grid != 0),
+       aes(x = distance_grid, y = cov_full)) +
+  geom_line() +
+  geom_point(data = plot_nugg |> filter(distance_grid == 0)) +
+  labs(x = "Distance", y = "Covariance (log odds scale)") 
+```
+
+From the plot, we do see evidence of correlation in the log odds of moose presence, as we expected from looking at the plot of the bernoulli presences in the original data.
+
+Much of what was discussed in earlier sections of these materials pertaining to spatial models with normally distributed random errors also applies to spatial logistic regression models. For example, we can obtain confidence intervals for the fixed effects coefficients:
+
+```{r}
+tidy(mod_spatial, conf.int = TRUE, conf.level = 0.95)
+```
+
+We can glance at the model for some quick summary statistics:
+
+```{r}
+glance(mod_spatial)
+```
+
+And, we can augment the model for model diagnostics that we can use to make diagnostic plots:
+
+```{r}
+augment(mod_spatial)
+```
+
+Note that, in the augmented output, the `.fitted` column gives fitted values __on the log odds scale__. If we want these to be on the probability scale, we can either add an argument to augment:
+
+CHANGE THIS ONCE I HEAR BACK FROM MIKE:
+
+```{r}
+augment(mod_spatial, type = "response")
+```
+
+Or, we can backtransform manually using the fact that:
+
+$$
+\pi_i = \frac{e^{\text{logodds}(\pi_i)}}{1 + e^{\text{logodds}(\pi_i)}}
+$${#eq-backtransform}
+
+```{r}
+## put mutate statement here!
+```
+
+```{r}
+#| echo: false
+#| eval: false
+## ask Mike at some point
+library(spmodel)
+library(tidyverse)
+
+mod_nonspatial <- glm(presence ~ elev + strat, data = moose, family = "binomial")
+
+init <- spcov_initial(spcov_type = "exponential", ie = 0, de = 0, range = 1,
+                      known = c("ie", "de", "range"))
+mod_spatial <- spglm(presence ~ elev + strat, data = moose, family = "binomial",
+                     spcov_initial = init, estmethod = "ml")
+
+
+mod_spatial |> summary()
+mod_spatial |> glance()
+logLik(mod_spatial)
+328 * 2 + 3 * 2 ## AIC
+
+mod_nonspatial |> summary()
+mod_nonspatial |> broom::glance()
+logLik(mod_nonspatial)
+147 * 2 + 3 * 2 ## AIC
+```
+
+## Prediction
+
+Using our fitted spatial logistic regression model, we can also obtain predicted probabilities of moose presence at spatial locations not in the `moose` data frame. The `moose_preds` data frame in the `spmodel` package contains 100 locations in the region of interest that were not sampled for moose presence.
+
+```{r}
+moose_preds
+```
+
+We can make a plot of these locations overlaid on the sampled locations with:
+
+```{r}
+ggplot(data = moose, aes(colour = presence)) +
+  geom_sf() +
+  theme_void() +
+  scale_colour_viridis_d() +
+  geom_sf(data = moose_preds, colour = "grey")
+```
+
+Conceptually, the predictions for the __log odds__ of moose presence are found in a similar fashion to the way that the predictions were calculated from a model with normally distributed random errors in @sec-prediction. That is, for a particular spatial location we wish to predict for, we use the estimated log odds of presence for locations that we did observe to predict our location of interest's log odds of presence. Locations that are closer generally have more weight than locations that are further away when there is evidence of spatial correlation.
+
+We can either use `augment()` or `predict()` to obtain the predicted log odds of moose presence at these 100 unsampled spatial locations. If the locations we wish to predict at are not in the data frame used to fit the model, then we provide a `newdata` argument that is a data frame (or, in this case, an `sf` object) that has the same structure as the data used to fit the model (including values for all predictors in the model and the appropriate coordinates).
+
+```{r}
+augment(mod_spatial, newdata = moose_preds)
+predict(mod_spatial, newdata = moose_preds)
+```
+
+While `augment()` returns the predicted log odds of presence in a data frame, `predict()` returns the predicted log odds of presence as a vector. If we want the predictions on the probability scale, we can either backtransform the log odds manually using @eq-backtransform, or, we can provide a `type = "response"` argument to `augment()` or `predict()`:
+
+```{r}
+## shown for augment() only
+aug_pred <- augment(mod_spatial, newdata = moose_preds, type = "response")
+```
+
+Below, we plot the predicted probabilities:
+
+```{r}
+ggplot(data = aug_pred) +
+  geom_sf(aes(colour = .fitted)) +
+  theme_void() +
+  scale_colour_viridis_c()
+```
+
+The predicted probabilities do seem reasonable given the plot of the original data: predicted probabilities of presence tend to be higher in the eastern and southeastern region of the study area where a lot of moose presences were observed and lower in the northwestern region of the study area where a lot of moose absences were observed.
+
+In this section, we focused only on a spatial extension to logistic regression. Spatial extensions to other generalized linear models, like Poisson regression, Gamma regression, etc. are developed similarly: the spatial modeling is performed on the "link" scale (logit in the case of logistic regression), and these models can be fit by changing the `family` argument of `spglm()` to `"poisson"`, `"gamma"`, etc.
+
+

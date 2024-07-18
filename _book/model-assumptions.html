@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Introduction to Spatial Modeling with spmodel - 4&nbsp; Model Assumptions</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./prediction.html" rel="next">
+<link href="./point-modeling.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data-exploration.html">Spatial Modeling with <code>spmodel</code></a></li><li class="breadcrumb-item"><a href="./model-assumptions.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Assumptions</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Introduction to Spatial Modeling with spmodel</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">Spatial Modeling with <code>spmodel</code></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-exploration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Spatial Data Exploration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./spatial-covariance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Spatial Covariance and Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./point-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Modeling Point Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-assumptions.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Assumptions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Prediction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./logistic-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Spatial Logistic Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./areal-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Areal Modeling</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#model-assumptions" id="toc-model-assumptions" class="nav-link active" data-scroll-target="#model-assumptions"><span class="header-section-number">4.1</span> Model Assumptions</a>
+  <ul class="collapse">
+  <li><a href="#linearity" id="toc-linearity" class="nav-link" data-scroll-target="#linearity"><span class="header-section-number">4.1.1</span> Linearity</a></li>
+  <li><a href="#stationarity" id="toc-stationarity" class="nav-link" data-scroll-target="#stationarity"><span class="header-section-number">4.1.2</span> Stationarity</a></li>
+  <li><a href="#normality" id="toc-normality" class="nav-link" data-scroll-target="#normality"><span class="header-section-number">4.1.3</span> Normality</a></li>
+  <li><a href="#randomness" id="toc-randomness" class="nav-link" data-scroll-target="#randomness"><span class="header-section-number">4.1.4</span> Randomness</a></li>
+  </ul></li>
+  <li><a href="#addressing-violated-assumptions" id="toc-addressing-violated-assumptions" class="nav-link" data-scroll-target="#addressing-violated-assumptions"><span class="header-section-number">4.2</span> Addressing Violated Assumptions</a>
+  <ul class="collapse">
+  <li><a href="#adjusting-the-mean-structure" id="toc-adjusting-the-mean-structure" class="nav-link" data-scroll-target="#adjusting-the-mean-structure"><span class="header-section-number">4.2.1</span> Adjusting the Mean Structure</a></li>
+  <li><a href="#transforming-the-response" id="toc-transforming-the-response" class="nav-link" data-scroll-target="#transforming-the-response"><span class="header-section-number">4.2.2</span> Transforming the Response</a></li>
+  <li><a href="#adjusting-the-error-structure" id="toc-adjusting-the-error-structure" class="nav-link" data-scroll-target="#adjusting-the-error-structure"><span class="header-section-number">4.2.3</span> Adjusting the Error Structure</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-model-assumptions" class="quarto-section-identifier"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Assumptions</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Goals
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>State and assess the assumptions of a spatial linear model.</li>
+<li>Explain how a spatial linear model can accommodate non-linear trends and skewed response variables.</li>
+</ul>
+</div>
+</div>
+<p>The goal of this section is to discuss the standard assumptions of the spatial linear model and to assess how reasonable these assumptions seem with plots. Throughout, we will use the <code>spmodel</code>, <code>sf</code>, <code>spData</code>, <code>tidyverse</code> and <code>broom</code> packages:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spmodel)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spData)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>()) <span class="do">## set the default theme</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We will again use the baltimore housing data set from the <code>spData</code> package. Recall that this data set contains information on 211 house prices in the baltimore area in the year 1978. Variables in the data set include:</p>
+<ul>
+<li><code>PRICE</code>, the price of the home, in thousands of dollars.</li>
+<li><code>AGE</code>, the age of the house, in years.</li>
+<li><code>SQFT</code>, the square footage of the house, in hundreds of square feet.</li>
+<li><code>X</code>, the x-coordinate location of the home (with an unknown projection).</li>
+<li><code>Y</code>, the y-coordinate location of the home (with an unknown projection).</li>
+</ul>
+<p>We again convert the <code>baltimore</code> data frame object to an <code>sf</code> object with:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>baltimore_sf <span class="ot">&lt;-</span> baltimore <span class="sc">|&gt;</span> <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"X"</span>,<span class="st">"Y"</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>baltimore_sf</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Simple feature collection with 211 features and 17 fields</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Geometry type: POINT</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Dimension:     XY</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Bounding box:  xmin: 860 ymin: 505.5 xmax: 987.5 ymax: 581</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="do">## CRS:           NA</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="do">## First 10 features:</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="do">##    STATION PRICE NROOM DWELL NBATH PATIO FIREPL AC BMENT NSTOR GAR AGE CITCOU</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 1        1  47.0     4     0   1.0     0      0  0     2     3   0 148      0</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 2        2 113.0     7     1   2.5     1      1  1     2     2   2   9      1</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 3        3 165.0     7     1   2.5     1      1  0     3     2   2  23      1</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 4        4 104.3     7     1   2.5     1      1  1     2     2   2   5      1</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 5        5  62.5     7     1   1.5     1      1  0     2     2   0  19      1</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 6        6  70.0     6     1   2.5     1      1  0     3     3   1  20      1</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 7        7 127.5     6     1   2.5     1      1  1     3     1   2  20      1</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 8        8  53.0     8     1   1.5     1      0  0     0     3   0  22      1</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="do">## 9        9  64.5     6     1   1.0     1      1  1     3     2   0  22      1</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="do">## 10      10 145.0     7     1   2.5     1      1  1     3     2   2   4      1</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="do">##     LOTSZ  SQFT   X   Y        geometry</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="do">## 1    5.70 11.25 907 534 POINT (907 534)</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="do">## 2  279.51 28.92 922 574 POINT (922 574)</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="do">## 3   70.64 30.62 920 581 POINT (920 581)</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="do">## 4  174.63 26.12 923 578 POINT (923 578)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="do">## 5  107.80 22.04 918 574 POINT (918 574)</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="do">## 6  139.64 39.42 900 577 POINT (900 577)</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="do">## 7  250.00 21.88 918 576 POINT (918 576)</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="do">## 8  100.00 36.72 907 576 POINT (907 576)</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="do">## 9  115.90 25.60 918 562 POINT (918 562)</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="do">## 10 365.07 44.12 897 576 POINT (897 576)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="model-assumptions" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="model-assumptions"><span class="header-section-number">4.1</span> Model Assumptions</h2>
+<p>For spatial linear models, we must make some assumptions about the underlying model generating our data. What are these assumptions, and how can we check these assumptions given our observed sample of data? All of the assumptions are embedded into the spatial linear model formula:</p>
+<p><span id="eq-splm"><span class="math display">\[
+Y_i = \beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \ldots + \beta_p x_{pi} + \epsilon_i + \tau_i,
+\tag{4.1}\]</span></span></p>
+<p>where</p>
+<ul>
+<li><span class="math inline">\(\epsilon_i\)</span> is normally distributed with mean <code>0</code>, variance <span class="math inline">\(\sigma^2_{ie}\)</span>, and <span class="math inline">\(\epsilon_i\)</span> is independent of <span class="math inline">\(\epsilon_j\)</span> for all <span class="math inline">\(i \neq j\)</span>.</li>
+<li><span class="math inline">\(\tau_i\)</span> is normally distributed with mean <code>0</code>, variance <span class="math inline">\(\sigma^2_{de}\)</span>, and can have covariance with <span class="math inline">\(\tau_j\)</span>. The covariance of <span class="math inline">\(\tau_i\)</span> and <span class="math inline">\(\tau_j\)</span> can be modeled with a covariance function, like the exponential, gaussian, etc, that depends only on the distance <span class="math inline">\(h_{ij}\)</span> between observations <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>.</li>
+</ul>
+<p>Here, we will also define <span class="math inline">\(\delta_i \equiv \epsilon_i + \tau_i\)</span> to encompass the entire random error. Because <span class="math inline">\(\epsilon_i\)</span> and <span class="math inline">\(\tau_i\)</span> are independent, the mean of <span class="math inline">\(\delta_i\)</span> is equal to 0, the variance of <span class="math inline">\(\delta_i\)</span> is equal to <span class="math inline">\(\sigma^2 \equiv \sigma_{ie}^2 + \sigma_{de}^2\)</span>, and the covariance of <span class="math inline">\(\delta_i\)</span> with <span class="math inline">\(\delta_j\)</span> (<span class="math inline">\(i \neq j\)</span>) with an exponential correlation function is equal to <span class="math inline">\(\sigma_{de}^2 e^{-h_{ij} / \phi}\)</span>, where <span class="math inline">\(h_{ij}\)</span> is the distance between locations <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> and <span class="math inline">\(\phi\)</span> is the range parameter.</p>
+<p>Embedded within this spatial linear model formula are the assumptions of:</p>
+<ol type="1">
+<li><p>Linearity</p></li>
+<li><p>Stationarity and Isotropy</p></li>
+<li><p>Normality</p></li>
+</ol>
+<p>We examine each of these assumptions in turn here.</p>
+<section id="linearity" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="linearity"><span class="header-section-number">4.1.1</span> Linearity</h3>
+<p>First, like in regression models with independent random errors, we still assume that the “mean structure” of the model is <strong>linear</strong> with respect to the <span class="math inline">\(\beta\)</span> coefficients. The most common structure for the mean of the response <span class="math inline">\(Y_i\)</span>, which we will denote as <span class="math inline">\(\mu_i\)</span>, is: <span class="math inline">\(\beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \ldots + \beta_p x_{pi}\)</span>.</p>
+<p>However, spatial linear models can still easily accommodate non-linear trends as long as the mean structure is linear in the <span class="math inline">\(\beta\)</span> coefficients. For example,</p>
+<ul>
+<li><p><span class="math inline">\(\mu_i = \beta_0 + \beta_1 x_{1i}^2\)</span>,</p></li>
+<li><p><span class="math inline">\(\mu_i = \beta_0 + \beta_1 log(x_{1i}) + \beta_2 \sqrt{x_{2i}}\)</span>,</p></li>
+<li><p><span class="math inline">\(\mu_i = \beta_1 x_{1i} + \beta_2 x_{2i} + \beta_3 x_{1i} x_{2i}\)</span></p></li>
+</ul>
+<p>are all linear models in that they are linear in the <span class="math inline">\(\beta_i\)</span> coefficients. An example of a non-linear mean structure for a model is <span class="math inline">\(\mu_i = \beta_0 + \beta_1e^{-x_{1i}/\beta_2}\)</span> because this cannot be re-written to be linear in the <span class="math inline">\(\beta_i\)</span> coefficients. Additive models and splines are other examples of methods that can be used within the spatial linear model framework.</p>
+<p>The most common plot to assess whether the linearity assumption is valid for a particular model is to plot the <em>standardized residuals</em> vs.&nbsp;the <em>fitted values</em> and look to make sure there is no strong curvature in the plot. The <em>fitted values</em> are defined as <span class="math inline">\(\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1x_{i1} + \hat{\beta}_2x_{i2} + \ldots + \hat{\beta}_p x_{ip}\)</span>. While the “non-standardized” residuals are <span class="math inline">\(e_i = y_i - \hat{y}_i\)</span>, the standardized residuals are scaled so that they have a mean of 0 and a variance equal to 1.</p>
+<p>As an example, we fit a spatial linear model with the spherical covariance function and with <code>NROOM</code>, <code>NBATH</code>, <code>SQFT</code>, <code>LOTSZ</code>, and <code>AGE</code> as predictors in the model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mod_lin <span class="ot">&lt;-</span> <span class="fu">splm</span>(PRICE <span class="sc">~</span> NROOM <span class="sc">+</span> NBATH <span class="sc">+</span> SQFT <span class="sc">+</span> LOTSZ,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> baltimore_sf, <span class="at">spcov_type =</span> <span class="st">"spherical"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To obtain the <strong>standardized residuals</strong> and the <strong>fitted values</strong> for the model, we <code>augment()</code> <code>mod_lin</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mod_lin_aug <span class="ot">&lt;-</span> <span class="fu">augment</span>(mod_lin)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mod_lin_aug</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Simple feature collection with 211 features and 10 fields</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Geometry type: POINT</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Dimension:     XY</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Bounding box:  xmin: 860 ymin: 505.5 xmax: 987.5 ymax: 581</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="do">## CRS:           NA</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 211 × 11</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="do">##   PRICE NROOM NBATH  SQFT LOTSZ .fitted .resid    .hat  .cooksd .std.resid</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="do">## * &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 1  47       4   1    11.2   5.7    48.3  -1.31 0.00926 0.0109        2.41 </span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 113       7   2.5  28.9 280.     91.2  21.8  0.0384  0.0127        1.26 </span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 165       7   2.5  30.6  70.6    74.2  90.8  0.0375  0.255         5.72 </span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 104.      7   2.5  26.1 175.     82.3  22.0  0.0156  0.000652      0.454</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 5  62.5     7   1.5  22.0 108.     68.2  -5.70 0.0205  0.00721      -1.31 </span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 6  70       6   2.5  39.4 140.     78.5  -8.46 0.0476  0.0301       -1.73 </span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 205 more rows</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: geometry &lt;POINT&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The fitted values are given in a column called <code>.fitted</code> while the standardized residuals are given in a column called <code>.std.resid</code>. Then, we can construct a plot of the standardized residuals vs.&nbsp;fitted values with:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mod_lin_aug, <span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>There is not any major curvature in this plot: therefore, there is no major evidence that the linearity assumption has been violated for this model.</p>
+</section>
+<section id="stationarity" class="level3" data-number="4.1.2">
+<h3 data-number="4.1.2" class="anchored" data-anchor-id="stationarity"><span class="header-section-number">4.1.2</span> Stationarity</h3>
+<p>Next, we typically assume a type of stationarity in our model. If the stationarity assumption is valid, then we would expect the variance of <span class="math inline">\(\delta_i\)</span> to be similar at all values of the predictor variables. That is, we assume that all <span class="math inline">\(\delta_i\)</span> have the same overall variance: <span class="math inline">\(\sigma^2 \equiv \sigma_{de}^2 + \sigma_{ie}^2\)</span>.</p>
+<p>We also assume that the covariance between <span class="math inline">\(\delta_i\)</span> and <span class="math inline">\(\delta_j\)</span> is a function of the distance between the locations <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> only. We can relax this assumption and assume that the covariance is a function of both distance and direction between the locations <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> by fitting an <em>anisotropic</em> model. However, in this section, we only consider isotropic models for which the covariance is only a function of distance.</p>
+<p>To assess whether it is reasonable to assume that the random errors all have the same variance <span class="math inline">\(\sigma^2\)</span>, we can again use the plot of the standardized residuals vs.&nbsp;the fitted values.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mod_lin_aug, <span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>From this plot, we see that there is some mild evidence against this assumption. For predicted <span class="math inline">\(\hat{y}_i\)</span> that are small, there is less overall variability in the standardized residuals. On the other hand, for large fitted values, there is a bit more overall variability in the standardized residuals. However, this is not a drastic pattern: some may look at this plot and say that the assumption of constant variance seems reasonable while others might not be satisfied with that particular assumption.</p>
+<p>Assessing whether or not it is reasonable to assume that spatial covariance is based only on distance and that the chosen covariance function is reasonable is a much harder task visually. With larger data sets, we could split the data up into 4 “quadrants” and fit a spatial model separately for each quadrant. If the covariance structure does not change across space, then we would expect to get similar covariance structures in each of the 4 quadrants. But, with many examples, such as this one, we do not have enough data (211 observations here) to perform this check.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Importantly, the assumptions we have are much easier to think about in terms of the random errors, not in terms of the response variable itself.</p>
+</div>
+</div>
+<p>When we introduced spatial covariance in <a href="spatial-covariance.html"><span>Chapter&nbsp;2</span></a>, we did so in terms of a response variable of interest. However, after we introduce predictor variables into the model, we are now thinking about this covariance as being a structure placed on the random errors in the model. We might wind up with <strong>really</strong> different fitted covariance functions for a model placed on the response variable (with no predictors) than for a model placed on the random errors with predictors included in the mean structure of the model.</p>
+<p>For example, consider again the baltimore housing data set. We can plot the response variable, <code>PRICE</code> and observe that there is substantial spatial correlation in the <code>PRICE</code> variable:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> baltimore_sf, <span class="fu">aes</span>(<span class="at">colour =</span> PRICE)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_viridis_c</span>() <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>And, a fitted covariance model for <code>PRICE</code> using a spherical covariance function with no predictors in the mean structure of the model is:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We see that there is a large amount of spatial covariance estimated. However, when we introduce predictors into our model, we model the <strong>random errors</strong> (<span class="math inline">\(\delta_i\)</span>) with the chosen spatial covariance function. Doing so can drastically change the estimated covariance parameters:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>In the plot above, we see that, when modeling <code>PRICE</code> with no predictors, there is more overall variability (a larger covariance when distance is equal to 0) and that, in general, the covariance between <code>PRICE</code> random variables is larger. On the other hand, when we introduce predictors into the model, some of the variability in <code>PRICE</code> is accounted for (or explained) by these predictors. Therefore, we see that the fitted covariance curve is generally lower at all values of distance compared to the curve for the model with no predictors.</p>
+<!-- When making a spatial plot of the residuals of this model, we do see that, while the residuals still display evidence of spatial correlation (and so a spatial model is still useful here), there is a bit less spatial patterning in these residuals than there is when looking at `PRICE` on its own. -->
+<!-- In fact, as we will see in REFERENCE EXERCISE, it is entirely possible to observe a lot of spatial correlation in a response variable, but, particularly when a predictor variable is spatially patterned itself, we might observe that the errors in a model for the spatially patterned response variable display little correlation. -->
+</section>
+<section id="normality" class="level3" data-number="4.1.3">
+<h3 data-number="4.1.3" class="anchored" data-anchor-id="normality"><span class="header-section-number">4.1.3</span> Normality</h3>
+<p>Finally, we also assume that the random errors in the model are <em>normally distributed</em>.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The assumption here is that the errors are normally distributed. Especially if the distribution of one or more of the predictors is very skewed, then it is entirely possible for a histogram of the response to look very skewed but for a histogram of the residuals to look approximately normally distributed.</p>
+</div>
+</div>
+<p>To assess this assumption, we can construct a histogram of the standardized residuals.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mod_lin_aug, <span class="fu">aes</span>(<span class="at">x =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">bins =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We see that the histogram of residuals is approximately symmetric and that there is one fairly extreme outlier with a standardized residual equal to 6.</p>
+<p>Note that if we construct a histogram of the response variable, <code>PRICE</code>, we observe some right-skewness.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> baltimore_sf, <span class="fu">aes</span>(<span class="at">x =</span> PRICE)) <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">bins =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The reason that we can see skewness in the response variable but not in the residuals is that, for the histogram of the residuals, we are taking into account the effects of the predictors. A simple linear regression example can help illustrate this. In the toy example below, we see that the observed distribution of the toy response variable, <span class="math inline">\(y\)</span>, is clearly right-skewed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5142141</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rexp</span>(<span class="dv">100</span>, <span class="dv">1</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">+</span> <span class="dv">4</span> <span class="sc">*</span> x <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>toy_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x, y)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> toy_df, <span class="fu">aes</span>(<span class="at">x =</span> y)) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">bins =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The reason for this right-skewness is that there are many small <span class="math inline">\(x\)</span> values but not very many observed large <span class="math inline">\(x\)</span> values:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> toy_df, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>After we account for <span class="math inline">\(x\)</span> in the model, we obtain a symmetric distribution of the standardized model residuals, satisfying the normality assumption even though the observed histogram of <span class="math inline">\(y\)</span> is right-skewed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>toy_mod <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x, <span class="at">data =</span> toy_df)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>toy_resid <span class="ot">&lt;-</span> <span class="fu">augment</span>(toy_mod)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> toy_resid, <span class="fu">aes</span>(<span class="at">x =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">bins =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Again, we only care about normality of the random errors, so as long as the histogram of the residuals is not very skewed, the normality assumption is satisfied.</p>
+<p>Normality of the random errors is most important for constructing <strong>prediction intervals</strong> for the response at unsampled spatial locations. For other types of inference, including hypothesis tests and confidence intervals on the <span class="math inline">\(\beta\)</span> coefficients and confidence intervals for the mean response at a sampled or unsampled spatial location, mild violations of normality are okay for large sample sizes because of the Central Limit Theorem.</p>
+</section>
+<section id="randomness" class="level3" data-number="4.1.4">
+<h3 data-number="4.1.4" class="anchored" data-anchor-id="randomness"><span class="header-section-number">4.1.4</span> Randomness</h3>
+<p>In the discussion of assumptions above, a “random selection” of spatial locations is not mentioned. Random selection of spatial locations is <em>not</em> a strict assumption for fitting and interpreting a spatial model. Often, randomly selecting spatial locations to sample in a study area is not feasible anyway, as sampling on private land or on certain terrain may be illegal or impossible.</p>
+<p>While randomness is not a strict assumption for a spatial model, how spatial locations are selected can influence the scope of inference. As an extreme example, we would not want to measure pollutant concentration in a sample of lakes in Minnesota and make subsequent inference to all lakes in the United States. As a less extreme example, we would not want to measure pollutant concentration in only the largest lakes in Minnesota and make subsequent inference to all lakes in Minnesota.</p>
+</section>
+</section>
+<section id="addressing-violated-assumptions" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="addressing-violated-assumptions"><span class="header-section-number">4.2</span> Addressing Violated Assumptions</h2>
+<p>We now turn our attention to addressing violated assumptions. Most of the strategies discussed here substantially overlap with strategies used to address violated assumptions for linear models with independent random errors.</p>
+<section id="adjusting-the-mean-structure" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="adjusting-the-mean-structure"><span class="header-section-number">4.2.1</span> Adjusting the Mean Structure</h3>
+<p>Sometimes the assumptions of a linear model are violated because the mean structure of the model is either missing an important predictor or is mis-specified in some other way. To remedy this issue, we can add in the important predictor to the mean structure of the model, or we can transform a predictor that is already in the model (e.g., with the log transformation, square root transformation, etc.).</p>
+<p>We have actually already seen this in the toy example given for the normality assumption. With no predictors in the model, we saw that normality was violated. However, after we introduced the predictor <span class="math inline">\(x\)</span> into the mean structure of the model, the residuals no longer appeared skewed.</p>
+<p>As another example, suppose that we fit a spatial linear model to the baltimore housing data set with <code>PRICE</code> as the response and <code>SQFT</code> as the only predictor. Making a plot of the standardized residuals vs.&nbsp;the fitted values, we see that there is a strong violation of the “constant variance” part of the stationarity assumption.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>mod_one <span class="ot">&lt;-</span> <span class="fu">splm</span>(PRICE <span class="sc">~</span> SQFT,</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> baltimore_sf, <span class="at">spcov_type =</span> <span class="st">"spherical"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>mod_one_aug <span class="ot">&lt;-</span> <span class="fu">augment</span>(mod_one)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>mod_one_aug</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Simple feature collection with 211 features and 7 fields</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Geometry type: POINT</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Dimension:     XY</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Bounding box:  xmin: 860 ymin: 505.5 xmax: 987.5 ymax: 581</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="do">## CRS:           NA</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 211 × 8</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="do">##   PRICE  SQFT .fitted .resid    .hat .cooksd .std.resid</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="do">## * &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 1  47    11.2    73.1  -26.1 0.00692 0.0131       1.94 </span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 113    28.9    88.0   25.0 0.00898 0.0209       2.15 </span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 165    30.6    89.4   75.6 0.0141  0.146        4.51 </span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 104.   26.1    85.6   18.7 0.00742 0.00206      0.743</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 5  62.5  22.0    82.2  -19.7 0.00407 0.00465     -1.51 </span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="do">## 6  70    39.4    96.8  -26.8 0.0214  0.0531      -2.20 </span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 205 more rows</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: geometry &lt;POINT&gt;</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mod_one_aug, <span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Adding back in the other predictors (<code>NROOM</code>, <code>NBATH</code>, <code>LOTSZ</code>) and fitting the model with all four of these predictors gives a plot that shows a more mild violation of the constant variance assumption:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mod_lin_aug, <span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="transforming-the-response" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="transforming-the-response"><span class="header-section-number">4.2.2</span> Transforming the Response</h3>
+<p>In the previous example, adding in the other predictors to the mean structure of the model helps the constant variance assumption. But, the plot of the standardized residuals vs.&nbsp;the fitted values still shows a mild departure from this assumption. If we think that this is cause for concern, we can transform the response variable. From such a transformation, we typically gain confidence in the model assumptions on the transformed response compared to the untransformed response. However, we typically lose interpretability of the model, as interpreting the estimated <span class="math inline">\(\hat{\beta}_j\)</span> coefficients with a transformed response is much more challenging.</p>
+<p>As an example, we can use the square root function to transform the <code>PRICE</code> variable in the spatial linear model with all 4 predictors.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>mod_trans <span class="ot">&lt;-</span> <span class="fu">splm</span>(<span class="fu">sqrt</span>(PRICE) <span class="sc">~</span> NROOM <span class="sc">+</span> NBATH <span class="sc">+</span> SQFT <span class="sc">+</span> LOTSZ,</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> baltimore_sf, <span class="at">spcov_type =</span> <span class="st">"spherical"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>mod_trans_aug <span class="ot">&lt;-</span> <span class="fu">augment</span>(mod_trans)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mod_trans_aug, <span class="fu">aes</span>(<span class="at">x =</span> .fitted, <span class="at">y =</span> .std.resid)) <span class="sc">+</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="model-assumptions_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We see that the constant variance part of the stationarity assumption is more reasonable when modeling the square root of <code>PRICE</code> instead of <code>PRICE</code> directly.</p>
+</section>
+<section id="adjusting-the-error-structure" class="level3" data-number="4.2.3">
+<h3 data-number="4.2.3" class="anchored" data-anchor-id="adjusting-the-error-structure"><span class="header-section-number">4.2.3</span> Adjusting the Error Structure</h3>
+<p>The strategies above (adjusting the mean structure and transforming the response) are applied to remedying model assumptions in many contexts outside of spatial statistics. We can also consider modifying the structure for the random errors in the model.</p>
+<p>The most common method of adjusting the error structure in spatial models is to change the correlation function used. Thus far, we have only mentioned the exponential, spherical, gaussian, and triangular correlation functions (all of which use <strong>3</strong> parameters), but, there are many others. One of the more popular functions that we have not mentioned is the Matern correlation function, which uses <strong>4</strong> parameters: the partial sill, nugget, range, and an “extra” parameter that controls the “smoothness” of the correlation function.</p>
+<p>Changing the correlation function used to model the random errors may help with the stationarity assumption and the normality assumption of these errors. So, which correlation function is “correct” to use in a particular situation? That question can be quite challenging to answer. For many data sets, many of the commonly used spatial covariance functions will yield similar inferences on the fixed effect (<span class="math inline">\(\beta_j\)</span>) coefficients.</p>
+<p>Perhaps the most common method to choose a spatial covariance function is to use a model selection criterion like the AIC. For example, in the code below, we fit models with the <code>exponential</code>, <code>gaussian</code>, <code>spherical</code>, <code>matern</code>, and <code>none</code> covariance structures.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>many_mods <span class="ot">&lt;-</span> <span class="fu">splm</span>(PRICE <span class="sc">~</span> NROOM <span class="sc">+</span> NBATH <span class="sc">+</span> SQFT <span class="sc">+</span> LOTSZ,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> baltimore_sf,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">spcov_type =</span> <span class="fu">c</span>(<span class="st">"exponential"</span>, <span class="st">"gaussian"</span>, <span class="st">"spherical"</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"matern"</span>, <span class="st">"none"</span>))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glances</span>(many_mods)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 5 × 10</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="do">##   model         n     p  npar value   AIC  AICc logLik deviance pseudo.r.squared</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;            &lt;dbl&gt;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 spherical   211     5     3 1715. 1721. 1721.  -857.     206.            0.337</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 exponent…   211     5     3 1715. 1721. 1721.  -857.     206.            0.339</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 gaussian    211     5     3 1722. 1728. 1729.  -861.     206.            0.352</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 matern      211     5     4 1721. 1729. 1729.  -860.     206.            0.346</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 none        211     5     1 1794. 1796. 1796.  -897.     206             0.502</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We observe something common in spatial analysis here: choosing to use a spatial covariance function in the first place is much more important than which particular covariance function is chosen. In other words, we see that the model with <code>none</code> covariance has a much higher AIC than the other models: this model clearly provides the worst fit to the data of the 5 chocies. Then, while the <code>spherical</code> and <code>exponential</code> slightly outperform the <code>gaussian</code> and <code>matern</code> for this example, all four remaining models have similar AIC values. Additionally, if we examine the model summary output for some of the models with</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>many_mods[[<span class="dv">3</span>]] <span class="sc">|&gt;</span> <span class="fu">tidy</span>() <span class="do">## spherical</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 5 × 5</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="do">##   term        estimate std.error statistic     p.value</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 (Intercept)  30.0      14.3        2.09  0.0363     </span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 NROOM         2.15      1.09       1.97  0.0489     </span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 NBATH         8.27      1.86       4.44  0.00000880 </span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 SQFT          0.0870    0.171      0.508 0.612      </span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 LOTSZ         0.0821    0.0158     5.18  0.000000221</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>many_mods[[<span class="dv">4</span>]] <span class="sc">|&gt;</span> <span class="fu">tidy</span>() <span class="do">## matern</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 5 × 5</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="do">##   term        estimate std.error statistic     p.value</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 (Intercept)  19.1       7.30       2.61  0.00894    </span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 NROOM         2.12      1.11       1.92  0.0554     </span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 NBATH         8.39      1.89       4.44  0.00000904 </span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 SQFT          0.0969    0.172      0.562 0.574      </span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 LOTSZ         0.0843    0.0159     5.29  0.000000119</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>we see that the estimated coefficients and p-values for inference are quite similar in all of the models with a spatial covariance function.</p>
+<p>Other modifications that we can make to the error structure of the model include:</p>
+<ul>
+<li>adding <code>anisotropy</code> so that covariance depends on both direction and distance.</li>
+<li>adding non-spatial random effects with <code>random</code> to accommodate for things like repeated measurements at the same spatial location.</li>
+<li>adding in a partition factor with <code>partition_factor</code> to force observations in different levels of the partition factor to be uncorrelated, no matter how far apart they are in space.</li>
+</ul>
+<p>While all of these are possible to fit with <code>spmodel</code> (via the <code>anisotropy</code>, <code>random</code>, and <code>partition_factor</code> arguments to <code>splm()</code>), we do not explore these further in these materials. Instead, <a href="https://usepa.github.io/spmodel/articles/guide.html" class="uri">https://usepa.github.io/spmodel/articles/guide.html</a> gives some examples on how to incorporate these more advanced modeling features into a spatial model.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./point-modeling.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Modeling Point Data</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./prediction.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Prediction</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Materials for use in conjunction with the <code>spmodel</code> R package.</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">This book was built with <a href="https://quarto.org/">Quarto</a>.</div>
+  </div>
+</footer>
+
+
+
+</body></html>

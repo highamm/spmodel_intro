@@ -1,0 +1,139 @@
+
+# Data Exploration Exercises
+
+## Exercises
+
+__Exercise 1__. Suppose that we simulate the following `fake_sulfate` variable as 197 independent normal variables, each with mean $\mu = 3$ and constant variance parameter $\sigma^2 = 5$ on spatial locations given in the `geometry` of the `sulfate` `sf` object:
+
+```{r}
+set.seed(03092023)
+sulfate <- sulfate |>
+  mutate(fake_sulfate = rnorm(n = 197, mean = 3, sd = sqrt(5)))
+sulfate
+```
+
+a. Do you expect to see spatial patterning in `fake_sulfate`? Give a one sentence reason. 
+
+b. Make a plot of `fake_sulfate`, using colour to map `fake_sulfate` on the `x` and `y` coordinates specified in the `geometry` of the `sf` object `sulfate`.
+
+c. By hand, make a sketch of what you anticipate a semivariogram of `fake_sulfate` will look like, using a unitless x axis and a unitless y axis.
+
+d. Use the `spmodel::esv()` function to construct the semivariogram for `fake_sulfate`. Does the actual empirical semivariogram look like the sketch you made in the previous exercise?
+
+```{r}
+#| echo: false
+#| output: false
+fake_sulfate_vg <- spmodel::esv(fake_sulfate ~ 1, data = sulfate)
+ggplot(data = fake_sulfate_vg, aes(x = dist, y = gamma, size = np)) +
+  geom_point() +
+  ylim(c(0, NA)) +
+  theme_minimal()
+```
+
+e. The `spmodel::esv()` function has a few other arguments controlling the binning structure of the semivariogram. One of these arguments is `bins`, which is an integer giving the number of bins to use for the semivariogram. For either the `sulfate` semivariogram or the `fake_sulfate` semivariogram, modify the number of bins to be different than the default of `15`. 
+
+__Exercise 2__. For which of the following two scenarios does a spatial analysis seem __more__ appropriate? Why?
+
+* _Scenario 1_: In a statistics class of 100 students, you collect (1) the coordinate locations of where each student sits in class, (2) each student's final exam score, and (3) whether or not each student completed all of the assigned readings. You're interested in whether there is an association between doing the assigned reading and final exam score.
+
+* _Scenario 2_. In a statistics class of 100 students, you collect (1) the coordinate locations of where each student sits in class, (2) each student's final exam score, and (3) whether or not each student completed all of the assigned readings. You're interested in whether students who sit close to each other tend to have more similar final exam scores.
+
+### Exercise Solutions
+
+__Exercise 1__. 
+
+a.
+
+::: {.callout-note collapse="true"}
+## Solution
+
+No, there should not be spatial patterning. `fake_sulfate` was simulated as normally distributed, __independent__ random variables, so there should be little spatial patterning.
+:::
+
+b. 
+
+```{r}
+#| code-fold: true
+ggplot(data = sulfate, aes(colour = fake_sulfate)) +
+  geom_sf() +
+  scale_colour_viridis_c() +
+  theme_void()
+```
+
+c. 
+
+::: {.callout-note collapse="true"}
+## Solution
+
+The solution is not given here, but the sketch should show neither an increasing nor a decreasing trend in the semivariance value (on the y-axis) for values of distance (on the x-axis).
+:::
+
+d. 
+
+```{r}
+#| code-fold: true
+fake_sulfate_vg <- spmodel::esv(fake_sulfate ~ 1, data = sulfate)
+
+ggplot(data = fake_sulfate_vg, aes(x = dist, y = gamma, size = np)) +
+  geom_point() +
+  ylim(c(0, NA)) +
+  theme_minimal()
+```
+
+e. 
+
+```{r}
+#| code-fold: true
+fake_sulfate_10 <- spmodel::esv(fake_sulfate ~ 1, data = sulfate,
+                                bins = 10)
+
+ggplot(data = fake_sulfate_10, aes(x = dist, y = gamma, size = np)) +
+  geom_point() +
+  ylim(c(0, NA)) +
+  theme_minimal()
+```
+
+__Exercise 2__.
+
+::: {.callout-note collapse="true"}
+## Solution
+
+Scenario 2 describes a setting where spatial analysis would be more appropriate: you would be able to obtain an estimate of the correlation between student exam scores at a given distance in their seats. 
+
+In Scenario 1, you would likely use an independent error model with whether or not the student did the assigned readings as the predictor in the model, even though a spatial model would be possible to fit here in theory.
+:::
+
+# Spatial Covariance Exercises
+
+## Exercises
+
+__Exercise 1__. exercise on simulating thousands of times to examine the change in the realized values.
+
+__Exercise 2__. connection of semivariogram to covariance
+
+__Exercise 3__. with the nugget effect included, calculate the correlation and compare to an identical correlation function without the nugget effect included.
+
+__Exercise 4__. Give the function used to make the data frame to use in plots. one exercise with misinterpretations of the spatial covariance parameters (multiple parts)
+
+# Point Modeling Exercises
+
+## Exercises
+
+
+__Exercise 1__. WITH A DIFFERENT DATA SET, JUST FIT A SPATIAL LINEAR MODEL
+
+INTERPRET EACH FITTED PARAMETER
+
+FIND A CI FOR ONE OF THE PARAMETERS
+
+CONDUCT A HYPOTHESIS TEST ON ONE OF THE PARAMETERS
+
+USE A DIFFERENT COVARIANCE FUNCTION AND COMPARE THE MODELS
+
+__Exercise xxx__. ADD EXERCISES ABOUT THERE BEING SPATIAL PATTERNING IN Y BUT NONE IN RANDOM ERRORS AND ABOUT THERE BEING NO SPATIAL PATTERNING IN Y BUT THERE IS SOME IN RANDOM ERRORS.
+
+# Model Assumption Exercises
+
+__Exercise__. MAKE SIMULATION WHERE RESPONSE IS SPATIALLY CORRELATED BUT ERRORS ARE NOT (can do this with a spatially patterned x variable).
+
+__Exercise__. WHICH SPATIAL COVARIANCE FUNCTION TO CHOOSE?

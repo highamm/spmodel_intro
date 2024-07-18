@@ -1,0 +1,196 @@
+# Point Modeling Advanced {#point-modeling-adv} 
+
+```{r}
+#| echo: false
+source("_common.R")
+```
+
+ADD exercise that fits a spatial model with a predictor where the response is spatially correlated but the errors are not.
+
+## Spatial Correlation of Response Variable
+
+## Myth: When to Fit a Spatial Model
+
+The next myth we will discuss is:
+
+"My response variable shows some spatial correlation when I map it. Therefore, I should fit a spatial model."
+
+While a spatial model might be appropriate, it is also possible that the spatial pattern we see in a response variable is explained sufficiently with covariates in the model. 
+
+```{r}
+library(sf)
+library(spData)
+baltimore_sf <- baltimore %>% st_as_sf(., coords = c("X","Y"), remove = FALSE)
+plot(baltimore_sf["PRICE"])
+library(spmodel)
+library(sf)
+library(tidyverse)
+library(spData)
+mod <- lm(PRICE ~ NROOM + SQFT + AGE, data = baltimore_sf)
+baltimore_sf$resids_plot <- residuals(mod)
+ggplot(data = baltimore_sf, aes(x = X, y = Y, colour = resids_plot)) +
+  geom_point() +
+  scale_colour_viridis_c() +
+  theme_minimal()
+
+ggplot(data = baltimore_sf, aes(x = X, y = Y, colour = PRICE)) +
+  geom_point() +
+  scale_colour_viridis_c() +
+  theme_minimal()
+```
+
+An analogous myth in simple linear regression would be: "Because my response variable appears to be very skewed, the normality assumption is violated." Again, we might find that, after we take into account the effects of predictors in the model, the residuals of the model actually do not appear to be in any violation of the normality assumption. The following example shows that we would be making a mistake if we were to assess the normality assumption based on the observed histogram of the response variable, just as we would be making a mistake if we were to assess whether we need a model with spatially correlated errors based on an observed coloured scatterplot of the response variable.
+
+```{r}
+set.seed(09292022)
+test_df <- tibble(y = c(rnorm(100, 5, 2), rnorm(10, 25, 1)),
+       x = c(rnorm(100, 0, 1), rnorm(10, 5, 1)))
+## normality of the response variable looks violated before we
+## take into account the predictor x
+ggplot(data = test_df, aes(x = y)) +
+  geom_histogram(colour = "black", fill = "white", bins = 14)
+
+## no violation of the normality assumption if our model includes
+## x as a predictor
+augment_mod <- lm(y ~ x, data = test_df) |>
+  broom::augment()
+ggplot(data = augment_mod, aes(x = .resid))  +
+  geom_histogram(colour = "black", fill = "white", bins = 14)
+```
+ 
+example resulting in smaller p-value for covariate and example resulting in larger p-value for covariate when using `lm()`.
+
+
+```{r}
+baltimore_sf
+
+mod <- lm(PRICE ~ NROOM + NBATH + PATIO + FIREPL + AC + BMENT + NSTOR + SQFT + LOTSZ + GAR + AGE, data = baltimore_sf)
+
+preds_df <- mod |> broom::augment(data = baltimore_sf)
+ggplot(data = preds_df, aes(x = X, y = Y, colour = .resid)) +
+  geom_point() +
+  scale_colour_viridis_c()
+library(spmodel)
+vgram <- esv(.resid ~ 1, data = preds_df, xcoord = "X", ycoord = "Y")
+ggplot(data = vgram, aes(x = dist, y = gamma)) +
+  geom_point()
+```
+
+May not have spatial variation after accounting for some covariates.
+
+## Spatial Confounding
+
+A large p-value for a fixed effect does not necessarily mean that there is not any evidence that the fixed effect is associated with the response variable. For example, consider the following spatial linear model of `PRICE ~ AGE` on the `baltimore` data set from the `spData` package. 
+
+```{r}
+
+
+ggplot(data = baltimore_sf, aes(x = AGE, y = log(PRICE))) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+splm(log(PRICE) ~ AGE, data = baltimore_sf, spcov_type = "exponential") |>
+  tidy()
+lm(log(PRICE) ~ AGE, data = baltimore_sf) |> tidy()
+
+splm(log(PRICE) ~ AGE, data = baltimore_sf, spcov_type = "exponential") |>
+  augment()
+
+aug_lm <- lm(log(PRICE) ~ AGE, data = baltimore_sf) |> augment()
+```
+
+We see that, based on the p-value of 0.800, there is no evidence for an association between `AGE` of houses and `PRICE` of houses, which seems strange given our prior knowledge that, in most areas, newer houses tend to have higher prices.
+
+A more accurate statement about the p-value is that there is no evidence that `AGE` and `PRICE` of houses in the baltimore neighborhood are associated, after accounting for the spatial covariance in `PRICE`. To help illustrate this idea, we can fit a spatial linear model with no predictors to `PRICE` in the `baltimore` data set:
+
+```{r}
+nopred_mod <- splm(PRICE ~ 1, data = baltimore_sf,
+                   spcov_type = "exponential") 
+nopred_mod |> tidy()
+```
+
+We can think of this spatial model for the response variable `PRICE` as having three components for each `PRICE_i`:
+
+* a fitted value from the fixed effects structure of the model (in this case, an intercept)
+* a residual from the dependent error
+* a residual from the independent random error
+
+$Y_i = \hat{Y}_i + \hat{e}_{de} + \hat{e}_{ie}$
+
+The following code shows $Y_i$, $\hat{Y}_i$, $\hat{e}_{de}$ and $\hat{e}_{ie}$ first five observations in the data set
+
+```{r}
+tibble(Y_i = baltimore_sf$PRICE,
+       hatY_i = nopred_mod$fitted$response,
+       hat_e_de = nopred_mod$fitted$spcov$de,
+       hat_e_ie = nopred_mod$fitted$spcov$ie) |>
+  slice(1:5)
+```
+
+We can remove the spatial residual from the response variable and fit a model with a linear model with `AGE` on the now spatially uncorrelated residual data:
+
+```{r}
+baltimore_sf <- baltimore_sf |>
+  mutate(price_resid = PRICE - nopred_mod$fitted$spcov$de)
+
+lm(price_resid ~ AGE, data = baltimore_sf) |>
+  summary()
+```
+
+And we see that we get a very similar p-value as the spatial model with `AGE` as a predictor (0.808). In other words, after we account for the spatial correlation in the housing prices, there is no evidence for any association between `AGE` and `PRICE`. The reason we see the high p-value for `AGE` is likely because `AGE` itself exhibits spatial correlation patterns, and the model cannot distinguish between the variability of `PRICE` explained by the spatial error component of the model and the variability in `PRICE` explained by `AGE`. 
+
+We can verify this hypothesis with a spatial plot of `AGE`:
+
+```{r}
+ggplot(data = baltimore_sf, aes(x = X, y = Y, colour = AGE)) +
+  geom_point() +
+  scale_colour_viridis_c() +
+  theme_minimal()
+```
+
+And we do indeed see a high degree of spatial correlation in `AGE`.
+
+## Exercises 
+
+Exercise for an example where incorporating spatial correlation lowers the p-value for a fixed effect.
+
+```{r}
+library(spmodel)
+set.seed(5599)
+df_locations <- expand.grid(1:15, 1:15)
+spcov_params_val <- spcov_params("exponential", de = 2, ie = 0, range = 2)
+
+sim_errors <- sprnorm(spcov_params_val, data = df_locations, xcoord = Var1, ycoord = Var2)
+pred <- runif(nrow(df_locations), 0, 1)
+sim_response <- 4 + pred + sim_errors
+
+df_new <- tibble::tibble(df_locations, sim_errors, pred, sim_response)
+lm(sim_response ~ pred) |>
+  summary()
+
+splm(sim_response ~ pred, data = df_new,
+     spcov_type = "exponential", xcoord = Var1, ycoord = Var2) |>
+  summary()
+```
+
+Exercise for an example where incorporating spatial correlation lowers the p-value for a fixed effect.
+
+```{r}
+library(spmodel)
+set.seed(5599)
+df_locations <- expand.grid(1:15, 1:15)
+spcov_params_val <- spcov_params("exponential", de = 2, ie = 0, range = 2)
+
+sim_errors <- sprnorm(spcov_params_val, data = df_locations, xcoord = Var1, ycoord = Var2)
+pred <- runif(nrow(df_locations), 0, 1)
+sim_response <- 4 + pred + sim_errors
+
+df_new <- tibble::tibble(df_locations, sim_errors, pred, sim_response)
+lm(sim_response ~ pred) |>
+  summary()
+
+splm(sim_response ~ pred, data = df_new,
+     spcov_type = "exponential", xcoord = Var1, ycoord = Var2) |>
+  summary()
+```
+
+One myth about spatial analysis of data is that accounting for spatial correlation in a linear model will mean that the p-values for the predictors in the model will be higher because we have a lower effective sample size when observations are not independent. 

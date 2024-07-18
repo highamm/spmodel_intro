@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Introduction to Spatial Modeling with spmodel - 2&nbsp; Spatial Covariance and Correlation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./point-modeling.html" rel="next">
+<link href="./data-exploration.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data-exploration.html">Spatial Modeling with <code>spmodel</code></a></li><li class="breadcrumb-item"><a href="./spatial-covariance.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Spatial Covariance and Correlation</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Introduction to Spatial Modeling with spmodel</a> 
+        <div class="sidebar-tools-main">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">Spatial Modeling with <code>spmodel</code></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-exploration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Spatial Data Exploration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./spatial-covariance.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Spatial Covariance and Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./point-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Modeling Point Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model-assumptions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Model Assumptions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Prediction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./logistic-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Spatial Logistic Regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./areal-modeling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Areal Modeling</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#exploring-the-baltimore-housing-data" id="toc-exploring-the-baltimore-housing-data" class="nav-link active" data-scroll-target="#exploring-the-baltimore-housing-data"><span class="header-section-number">2.1</span> Exploring the Baltimore Housing Data</a></li>
+  <li><a href="#correlation-and-covariance" id="toc-correlation-and-covariance" class="nav-link" data-scroll-target="#correlation-and-covariance"><span class="header-section-number">2.2</span> Correlation and Covariance</a>
+  <ul class="collapse">
+  <li><a href="#introducing-spatial-correlation" id="toc-introducing-spatial-correlation" class="nav-link" data-scroll-target="#introducing-spatial-correlation"><span class="header-section-number">2.2.1</span> Introducing Spatial Correlation</a></li>
+  <li><a href="#introducing-spatial-covariance" id="toc-introducing-spatial-covariance" class="nav-link" data-scroll-target="#introducing-spatial-covariance"><span class="header-section-number">2.2.2</span> Introducing Spatial Covariance</a></li>
+  </ul></li>
+  <li><a href="#interpreting-spatial-covariance-parameters" id="toc-interpreting-spatial-covariance-parameters" class="nav-link" data-scroll-target="#interpreting-spatial-covariance-parameters"><span class="header-section-number">2.3</span> Interpreting Spatial Covariance Parameters</a></li>
+  <li><a href="#sec-stationarity" id="toc-sec-stationarity" class="nav-link" data-scroll-target="#sec-stationarity"><span class="header-section-number">2.4</span> Stationarity</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-spatial-covariance" class="quarto-section-identifier"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Spatial Covariance and Correlation</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Goals
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Identify a few common functions used to model spatial covariance.</li>
+<li>Explain the difference between spatial covariance and spatial correlation.</li>
+<li>Interpret the following spatial covariance parameters:
+<ul>
+<li>partial sill.</li>
+<li>range.</li>
+<li>nugget.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<p>We will use the <code>spmodel</code>, <code>sf</code>, <code>spData</code>, and <code>tidyverse</code> packages:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spmodel)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spData)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>()) <span class="do">## set the default theme</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We now turn our attention to more formal modeling of spatial correlation. While the empirical variogram is a useful exploratory tool, we are often interested in constructing a statistical model that incorporates spatial correlation. Note that in this section, we focus almost entirely on understanding spatial correlation and covariance. The code we can use to provide estimates of spatial covariance parameters in practice is much more of a focus in <a href="point-modeling.html"><span>Chapter&nbsp;3</span></a>.</p>
+<section id="exploring-the-baltimore-housing-data" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="exploring-the-baltimore-housing-data"><span class="header-section-number">2.1</span> Exploring the Baltimore Housing Data</h2>
+<p>Throughout this section, we use the <code>baltimore</code> data set from the <code>spData</code> package. This data set contains information on 211 house prices in the Baltimore area in the year 1978. While there are many variables collected on the 211 houses, we will focus only on the following 3 variables in this section:</p>
+<ul>
+<li><code>PRICE</code>, the price of the home, in thousands of dollars.</li>
+<li><code>X</code>, the x-coordinate location of the home (with an unknown projection).</li>
+<li><code>Y</code>, the y-coordinate location of the home (with an unknown projection).</li>
+</ul>
+<p>Note that, because the projection is unknown, we do not know the exact units of distance between two homes in the data set. But, we do have the relative spatial coordinates of each home with unknown units.</p>
+<p>Before we dive into modeling spatial covariance, we will first explore the <code>baltimore</code> data set using some plots from the previous section.</p>
+<p>We can convert the <code>baltimore</code> data frame object to an <code>sf</code> object with the <code>st_as_sf()</code> function from the <code>sf</code> package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>baltimore_sf <span class="ot">&lt;-</span> baltimore <span class="sc">|&gt;</span> <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"X"</span>,<span class="st">"Y"</span>), <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>baltimore_sf</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Simple feature collection with 211 features and 17 fields</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Geometry type: POINT</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Dimension:     XY</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Bounding box:  xmin: 860 ymin: 505.5 xmax: 987.5 ymax: 581</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="do">## CRS:           NA</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="do">## First 10 features:</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="do">##    STATION PRICE NROOM DWELL NBATH PATIO FIREPL AC BMENT NSTOR GAR AGE CITCOU</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 1        1  47.0     4     0   1.0     0      0  0     2     3   0 148      0</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 2        2 113.0     7     1   2.5     1      1  1     2     2   2   9      1</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 3        3 165.0     7     1   2.5     1      1  0     3     2   2  23      1</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 4        4 104.3     7     1   2.5     1      1  1     2     2   2   5      1</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 5        5  62.5     7     1   1.5     1      1  0     2     2   0  19      1</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 6        6  70.0     6     1   2.5     1      1  0     3     3   1  20      1</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 7        7 127.5     6     1   2.5     1      1  1     3     1   2  20      1</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 8        8  53.0     8     1   1.5     1      0  0     0     3   0  22      1</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="do">## 9        9  64.5     6     1   1.0     1      1  1     3     2   0  22      1</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="do">## 10      10 145.0     7     1   2.5     1      1  1     3     2   2   4      1</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="do">##     LOTSZ  SQFT   X   Y        geometry</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="do">## 1    5.70 11.25 907 534 POINT (907 534)</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="do">## 2  279.51 28.92 922 574 POINT (922 574)</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="do">## 3   70.64 30.62 920 581 POINT (920 581)</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="do">## 4  174.63 26.12 923 578 POINT (923 578)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="do">## 5  107.80 22.04 918 574 POINT (918 574)</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="do">## 6  139.64 39.42 900 577 POINT (900 577)</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="do">## 7  250.00 21.88 918 576 POINT (918 576)</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="do">## 8  100.00 36.72 907 576 POINT (907 576)</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="do">## 9  115.90 25.60 918 562 POINT (918 562)</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="do">## 10 365.07 44.12 897 576 POINT (897 576)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code>remove = FALSE</code> argument says to keep the <code>"X"</code> and <code>"Y"</code> coordinate columns in the data frame, in addition to using them to create a new <code>geometry</code> column.</p>
+<p>To explore the <code>PRICE</code> variable in the <code>baltimore_sf</code> data, we will make a plot of <code>PRICE</code> on the spatial coordinates, an empirical semivariogram of <code>PRICE</code>, and a basic histogram of <code>PRICE</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">## plot on spatial coordinates</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> baltimore_sf, <span class="fu">aes</span>(<span class="at">colour =</span> PRICE)) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_viridis_c</span>() <span class="sc">+</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="do">## empirical semivariogram</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>baltimore_esv <span class="ot">&lt;-</span> <span class="fu">esv</span>(PRICE <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> baltimore_sf)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> baltimore_esv, <span class="fu">aes</span>(<span class="at">x =</span> dist, <span class="at">y =</span> gamma, <span class="at">size =</span> np)) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lims</span>(<span class="at">y =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="cn">NA</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">## basic histogram</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> baltimore_sf, <span class="fu">aes</span>(<span class="at">x =</span> PRICE)) <span class="sc">+</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">bins =</span> <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We can see a few things from our exploratory plots. First, from the first two plots, we see that there is spatial correlation in the housing <code>PRICE</code>s. For example, in the plot of <code>PRICE</code> on the x and y coordinates, houses in the northern region of the study area tend to priced higher while houses priced in the southern area of the study area tend to have lower prices. We also see an increasing pattern in the empirical semivariogram, further indicating that houses closer together in space tend to have more similar prices than houses that are further apart.</p>
+<p>From the histogram of <code>PRICE</code>, we see that, while there is some right-skewness, the skewness is fairly mild. We also see that, while there are some outliers with somewhat high prices, these outliers are not too extreme. The units of <code>PRICE</code> are in hundreds of thousands of dollars: the house prices are so low because the data was collected in 1978!</p>
+<p>After exploring our data set, we now want to more formally model the spatial correlation that we see in the plot with the spatial coordinates and the empirical semivariogram. To do so, we first need to define the terms <em>random variable</em>, <em>spatial covariance</em>, and <em>spatial correlation</em>.</p>
+</section>
+<section id="correlation-and-covariance" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="correlation-and-covariance"><span class="header-section-number">2.2</span> Correlation and Covariance</h2>
+<p>Up until now, we have been using the term “spatial correlation” without actually explicitly defining the term. We have some intuition that there is spatial correlation if units that are closer together in proximity are more similar than units that are further apart. However, to explicitly model spatial correlation, we need to explicitly define the term.</p>
+<!-- wow this is hard to define in an introductory way-->
+<p>First, we will introduce the concept of a <em>random variable</em>, which we are informally defining as a <em>numeric variable whose possible values that can be expressed with some probability distribution</em>. Random variables are often denoted with a capital letter <span class="math inline">\(Y\)</span> or a capital letter <span class="math inline">\(X\)</span>.</p>
+<p>As a non-spatial example, we can define the random variable <span class="math inline">\(Y\)</span> as the number of Heads in <span class="math inline">\(n = 10\)</span> flips of a fair coin. While <span class="math inline">\(Y\)</span> itself is inherently random and never observed, we can obtain a single <em>realization</em> of <span class="math inline">\(Y\)</span> by actually conducting the coin-flip experiment and observing the number of heads. Suppose that we do conduct this experiment, observing 4 Heads. The realization of the random variable <span class="math inline">\(Y\)</span> is often denoted with a lower-case <span class="math inline">\(y\)</span>. In this example, <span class="math inline">\(y = 4\)</span>. If we repeat the coin flip experiment, possible values for <span class="math inline">\(y\)</span> are <span class="math inline">\(y = 0, y = 1, \ldots y = 10\)</span>.</p>
+<p>Moving from the coin-flip example to a spatial example with the Baltimore housing data set, we can imagine that the house prices at all 211 locations in the data set are generated from <em>random variables</em>, <span class="math inline">\(Y_1, Y_2, \ldots, Y_{211}\)</span>. We can think of our data as a single realization of these random variables, <span class="math inline">\(y_1 = 47.0, y_2 = 113.0, \ldots, y_{211} = 29.5\)</span>.</p>
+<section id="introducing-spatial-correlation" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="introducing-spatial-correlation"><span class="header-section-number">2.2.1</span> Introducing Spatial Correlation</h3>
+<p>So, why introduce random variables before we discuss spatial correlation. The reason is that when we think about <strong>spatial correlation</strong> in house prices, we always mean correlation between the random variables for house price, not the observed values (which, after they are observed, are fixed and no longer random). The definition of correlation between two random variables, <span class="math inline">\(Y_1\)</span> with mean <span class="math inline">\(\mu_1\)</span> and standard deviation <span class="math inline">\(\sigma_1\)</span> and <span class="math inline">\(Y_2\)</span> with mean <span class="math inline">\(\mu_2\)</span> and standard deviation <span class="math inline">\(\sigma_2\)</span> is:</p>
+<p><span id="eq-basic-corr"><span class="math display">\[
+\text{corr}(Y_1, Y_2) = \frac{\text{E}[(Y_1 - \mu_1)(Y_2 - \mu_2)]}{\sigma_1 \sigma_2},
+\tag{2.1}\]</span></span></p>
+<p>where <span class="math inline">\(\text{E}((Y_1 - \mu_1)(Y_2 - \mu_2))\)</span> denotes the expected value, or, the long-run average in the quantity <span class="math inline">\((Y_1 - \mu_1)(Y_2 - \mu_2)\)</span>. The correlation between two random variables is always between <span class="math inline">\(-1\)</span> and <span class="math inline">\(1\)</span>, inclusive. If this formula is a lot to take in, do not worry about it too much: spatial correlation is commonly modeled with a particular spatial correlation function and we will rarely make use of the definition of correlation explicitly.</p>
+<p>If the correlation between random variables <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span> is positive, then, if were to theoretically obtain thousands of realizations of <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span> and plot these thousands of realizations on a scatterplot (with the realizations of <span class="math inline">\(Y_2\)</span> on the y-axis and the realizations of <span class="math inline">\(Y_1\)</span> on the x-axis), then we would observe an increasing trend. In other words, the realizations of <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span> would tend to be larger together and would tend to be smaller together. If the correlation between random variables <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span> is negative, then, if were to theoretically obtain thousands of realizations of <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span> and plot these thousands of realizations on a scatterplot, then we would observe a decreasing trend.</p>
+<p>We have quickly glossed over a couple of things in the previous definition of correlation because, for introductory spatial models, we will not actually use the definition of correlation explicitly. Instead, for spatial models, we assume that the correlation between two random variables, <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span>, at spatial locations <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span>, can be modeled as a function of the spatial distance, denoted <span class="math inline">\(h_{12}\)</span>, between the locations where <span class="math inline">\(y_1\)</span> and <span class="math inline">\(y_2\)</span> are observed.</p>
+<p>An example may help with an understanding of spatial correlation. A common spatial correlation function is the <strong>exponential</strong> function:</p>
+<p><span id="eq-exponential"><span class="math display">\[
+\text{Corr}(Y_1, Y_2) = e^{\frac{-h_{12}}{\phi}},
+\tag{2.2}\]</span></span></p>
+<p>where <span class="math inline">\(\phi &gt; 0\)</span>, commonly called the <strong>range parameter</strong>, controls the rate of decay in the correlation. A larger <span class="math inline">\(\phi\)</span> value would indicate that the correlation decays slowly with distance while a smaller <span class="math inline">\(\phi\)</span> value would indicate that the correlation decays quickly with distance.</p>
+<p>There are a few things we should note about the exponential correlation function. First, if we use this correlation function, <span class="math inline">\(\text{Corr}(Y_1, Y_2)\)</span> must be between 0 and 1. Unlike the general definition of correlation given in <a href="#eq-basic-corr">Equation&nbsp;<span>2.1</span></a> (where the correlation can be negative), many spatial correlation functions, including the exponential, only allow non-negative correlation in the random variables because negative correlation is rarely observed in real spatial data. In other words, it is rare for locations close together in space to be less similar than locations further apart.</p>
+<p>Second, the idea of spatial correlation is a little abstract. In our baltimore house data, and, in most spatial applications, we only have one realization of our random variables. In other words, we only have one realization of the random variable <span class="math inline">\(Y_1\)</span>, which is <span class="math inline">\(y_1 = 47.0\)</span>; we only have one realization of the random variable <span class="math inline">\(Y_2\)</span>, which is <span class="math inline">\(y_2 = 113.0\)</span>, etc. Understanding the idea of spatial correlation requires that we think about a “what if” scenario: what if we were able to get millions of realizations of <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span>? How would these realizations vary together?</p>
+<p>Thinking again about our Baltimore housing example, we can estimate <span class="math inline">\(\phi\)</span>, the range parameter that controls how quickly spatial correlation decays with increased distance, and then determine the correlation between the random variables for house price at two spatial locations in the data set. We will talk more about how to estimate <span class="math inline">\(\phi\)</span> later in this section, but, for now, suppose that we obtain an estimate of 10.6.</p>
+<p>Consider the three spatial locations shown on the plot below. The distance between location 1 and location 2 is 42.72 units while the distance between location 2 and location 3 is 7.28 units.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>baltimore_label <span class="ot">&lt;-</span> baltimore_sf <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> baltimore_sf, <span class="fu">aes</span>(<span class="at">colour =</span> PRICE)) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_viridis_c</span>(<span class="at">end =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>() <span class="sc">+</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  ggrepel<span class="sc">::</span><span class="fu">geom_text_repel</span>(<span class="at">data =</span> baltimore_label, <span class="fu">aes</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">label =</span> STATION)) <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> baltimore_label, <span class="fu">aes</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">shape =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>If we use the exponential function to model spatial correlation, do you expect the estimated correlation between random variables for price to be larger for locations 1 and 2 or for locations 2 and 3?</p>
+<p>We can calculate the estimated correlation explicitly using the estimated range parameter and the exponential correlation formula in <a href="#eq-exponential">Equation&nbsp;<span>2.2</span></a>. The estimated correlation for locations 1 and 2 is <span class="math inline">\(e^{-42.72 / 10.6} = 0.0178\)</span> while the estimated correlation for locations 2 and 3 is <span class="math inline">\(e^{-7.28 / 10.6} = 0.503\)</span>. This tells us that, according to our model, the correlation between the random variables for price at locations 1 and 2 is negligible: knowing the realized house price at location 2 tells us very little about what the realized house price will be at location 1. On the other hand, the correlation between the random variables for price at locations 2 and 3 is moderately strong: knowing the realized house price at location 2 tells us that there is a strong possibility that the realized house price at location 3 is similar to the realized price at location 2.</p>
+<p>We can also make a plot of the correlation as a function of distance. The maximum distance between houses in the data set is 128 units.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>From the correlation plot, we see that, as we would expect, as distance gets larger, the correlation decreases. We also see from the plot that the correlation approaches 0 at large distances but never reaches 0 exactly and never becomes negative.</p>
+<p>There are many functions to choose from to model spatial correlation. We saw the formula for the exponential correlation function in <a href="#eq-exponential">Equation&nbsp;<span>2.2</span></a>. Some other common spatial correlation functions include:</p>
+<ul>
+<li>the <em>spherical</em> correlation function:</li>
+</ul>
+<p><span id="eq-spherical"><span class="math display">\[
+\text{Corr}(Y_1, Y_2) =
+\begin{cases}
+1 - 1.5 \cdot \frac{h_{12}}{\phi} + 0.5 \cdot \left(\frac{h_{12}}{\phi}\right)^3, &amp; h_{12} \leq \phi \\
+0, &amp; \text{otherwise}
+\end{cases}
+\tag{2.3}\]</span></span></p>
+<ul>
+<li>the <em>Gaussian</em> correlation function:</li>
+</ul>
+<p><span id="eq-gaussian"><span class="math display">\[
+\text{Corr}(Y_1, Y_2) =
+e^{-\left(\frac{h_{12}}{\phi}\right)^2}.
+\tag{2.4}\]</span></span></p>
+<ul>
+<li>the <em>triangular</em> correlation function:</li>
+</ul>
+<p><span id="eq-triangular"><span class="math display">\[
+\text{Corr}(Y_1, Y_2) =
+\begin{cases}
+\left(1 - \frac{h_{12}}{\phi}\right), &amp; h_{12} \leq \phi \\
+0, &amp; \text{otherwise}
+\end{cases}
+\tag{2.5}\]</span></span></p>
+<p>A plot of the estimated exponential, spherical, and Gaussian correlation functions for the housing data is shown here.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Notice that all three correlation functions having decreasing correlation as distance increases and that all three are bound by <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>. Note also that, while all three curves are somewhat similar, interpretating the nature of the spatial correlation in the house price data would change depending on which function is chosen. For example, for the Gaussian correlation, we would say that locations that are more than 12 or so units apart have no correlation in their prices. But, for the exponential and spherical correlation functions, we would still estimate there to be positive correlation at this distance. Which correlation function is best to use is a topic discussed more in <a href="point-modeling.html"><span>Chapter&nbsp;3</span></a>.</p>
+</section>
+<section id="introducing-spatial-covariance" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2" class="anchored" data-anchor-id="introducing-spatial-covariance"><span class="header-section-number">2.2.2</span> Introducing Spatial Covariance</h3>
+<p>Closely tied to the concept of spatial correlation is the idea of <strong>spatial covariance</strong>. The spatial covariance between two random variables, <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_2\)</span>, is simply equal to the numerator in <a href="#eq-basic-corr">Equation&nbsp;<span>2.1</span></a>, or, rearranging <a href="#eq-basic-corr">Equation&nbsp;<span>2.1</span></a>, is equal to:</p>
+<p><span class="math display">\[
+\text{cov}(Y_1, Y_2) = \sigma_1 \sigma_2 \text{corr}(Y_1, Y_2).
+\]</span></p>
+<p>In many spatial models, we assume that the standard deviation (and therefore the variance) of <span class="math inline">\(Y_1\)</span> and the standard deviation (and therefore the variance) of <span class="math inline">\(Y_2\)</span> are equal (<span class="math inline">\(\sigma = \sigma_1 = \sigma_2\)</span>, an assumption discussed more in <a href="#sec-stationarity"><span>Section&nbsp;2.4</span></a>) so that</p>
+<p><span id="eq-basic-cov"><span class="math display">\[
+\text{cov}(Y_1, Y_2) = \sigma_{de}^2 \text{corr}(Y_1, Y_2),
+\tag{2.6}\]</span></span></p>
+<p>where <span class="math inline">\(\sigma_{de}^2\)</span> is often called the <strong>partial sill</strong>, or dependent error variance, parameter. We can use the same spatial models for <span class="math inline">\(\text{corr}(Y_1, Y_2)\)</span> that were described in the previous section. So, we really just have one extra parameter now: <span class="math inline">\(\sigma_{de}^2\)</span>, which scales the correlation so that the maximum now corresponds to <span class="math inline">\(\sigma_{de}^2\)</span> instead of 1. For the housing data, if we were to estimate <strong>correlation</strong> of house prices in dollars and house prices in thousands of dollars with the same data, we would arrive at the same exact correlation function. However, the <strong>covariance</strong> would be larger if the prices were in dollars instead of in thousands of dollars.</p>
+<p>Estimating <span class="math inline">\(\sigma_{de}^2\)</span> (which is discussed more in <a href="point-modeling.html"><span>Chapter&nbsp;3</span></a>) with an exponential correlation/covariance model gives a value of $_{de}^2 = $ 716.9. The estimated covariance between locations 1 and 2 is then <span class="math inline">\(716.9 \cdot e^{-42.72 / 10.6} = 12.76\)</span> while the estimated covariance between locations 2 and 3 is <span class="math inline">\(716.9 \cdot e^{-7.28 / 10.6} = 360.6\)</span>.</p>
+<p>A plot of the estimated covariance of house prices, as a function of distance, is shown below. Note that the general pattern of the covariance is identical to that of the correlation; however, the y-axis is now scaled up to the estimated overall variance of house prices (just over 700 thousands of dollars squared).</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>While the correlation between random variables is very commonly discussed in non-spatial random effects models and in time series models, the covariance is more commonly presented in spatial contexts.</p>
+<p>Though the covariance <em>can</em> be modeled using <a href="#eq-basic-cov">Equation&nbsp;<span>2.6</span></a>, more commonly, we introduce a third covariance parameter to model spatial covariance. This third covariance parameter is often called the <strong>nugget</strong> and inflates the covariance only when the distance <span class="math inline">\(h\)</span> is equal to 0. Including the nugget often helps with model fit, so, unless there is a good reason not to, most spatial models include a nugget parameter.</p>
+<p>The exponential covariance between random variables <span class="math inline">\(Y_i\)</span> and <span class="math inline">\(Y_j\)</span> at spatial locations separated by a distance <span class="math inline">\(h_{ij}\)</span>, including a nugget effect, is:</p>
+<p><span id="eq-cov-nugget"><span class="math display">\[
+\text{cov}(Y_i, Y_j) =
+\begin{cases}
+\sigma_{ie}^2 + \sigma_{de}^2 e^{\frac{-h_{ij}}{\phi}}, &amp; h_{ij} = 0\\
+\sigma_{de}^2 e^{\frac{-h_{ij}}{\phi}}, &amp; h_{ij} &gt; 0
+\end{cases}
+\tag{2.7}\]</span></span></p>
+<p>In the formula, <span class="math inline">\(\sigma^2_{ie}\)</span> refers to the <strong>nugget</strong>, or <strong>independent error variance</strong> parameter while <span class="math inline">\(\sigma^2_{de}\)</span> refers to the <strong>partial sill</strong>, or the <strong>dependent error variance</strong> parameter.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Though we have built up to the spatial covariance function in <a href="#eq-cov-nugget">Equation&nbsp;<span>2.7</span></a> slowly (by first introducing the range parameter, then the partial sill, and finally the nugget), it is <a href="#eq-cov-nugget">Equation&nbsp;<span>2.7</span></a> with all three spatial covariance parameters that is most commonly used in spatial models (not <a href="#eq-exponential">Equation&nbsp;<span>2.2</span></a> or <a href="#eq-basic-cov">Equation&nbsp;<span>2.6</span></a>).</p>
+</div>
+</div>
+<p>The <span class="math inline">\(\text{cov}(Y_i, Y_j)\)</span>, with a nugget effect can be similarly defined for the other correlation functions (spherical, gaussian, triangular) by subbing in the appropriate correlation function in for <span class="math inline">\(e^{\frac{-h_{ij}}{\phi}}\)</span>.</p>
+<p>Adding in a nugget parameter to the model for the covariance means that we can get different estimates for the partial sill and the range parameters. The plot below shows the fitted covariance using a gaussian correlation function both with a nugget effect and without a nugget effect for the housing price variable. Note in the plot below how the inclusion of a nugget effect results in a “jump” in covariance when the distance is equal to 0 while in the model without the nugget effect, no such “jump” is possible.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>If there is no nugget effect in the model, then the correlation between <span class="math inline">\(Y_i\)</span> and <span class="math inline">\(Y_j\)</span> can be calculated as <span class="math inline">\(e^{-\left(\frac{h_{ij}}{\phi}\right)^2}\)</span> for a gaussian correlation model. This is the formula we used when we introduced correlation at the beginning of the section.</p>
+<p>However, if there is a nugget effect, then the overall variance is inflated, so that the correlation between <span class="math inline">\(Y_i\)</span> and <span class="math inline">\(Y_j\)</span>, whose locations are separated by distance <span class="math inline">\(h_{ij}\)</span>, is:</p>
+<p><span class="math display">\[
+\text{Corr}(Y_i, Y_j) = \frac{\sigma_{de}^2e^{-\left(\frac{h_{ij}}{\phi}\right)^2}}{\sigma^2_{de} + \sigma^2_{ie}}
+\]</span></p>
+</section>
+</section>
+<section id="interpreting-spatial-covariance-parameters" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="interpreting-spatial-covariance-parameters"><span class="header-section-number">2.3</span> Interpreting Spatial Covariance Parameters</h2>
+<p>Loosely speaking, the three covariance parameters can be interpreted as:</p>
+<ul>
+<li><span class="math inline">\(\sigma^2_{ie}\)</span> is the amount of “independent” (non-spatial) error variability in the response.</li>
+<li><span class="math inline">\(\sigma^2_{de}\)</span> is the amount of “dependent” (spatial) error variability in the response.</li>
+<li><span class="math inline">\(\phi\)</span> controls the rate of decay in the spatial correlation so that larger values of <span class="math inline">\(\phi\)</span> indicate that the correlation decays more slowly with distance.</li>
+</ul>
+<p>However, in practice, simple interpretations of these three parameters on their own and without considering the units of distance in the data used to fit the model can lead to misguided statements. Consider, for example, the following sets of covariance parameters with an <strong>exponential</strong> correlation function for locations that have a minimum distance (non-zero) of 0.5 units and a maximum distance of 5 units:</p>
+<ul>
+<li><p>Set 1: <span class="math inline">\(\sigma^2_{ie} = 25\)</span>, <span class="math inline">\(\sigma^2_{de} = 0.5\)</span>, <span class="math inline">\(\phi = 2.5\)</span>.</p></li>
+<li><p>Set 2: <span class="math inline">\(\sigma^2_{ie} = 1\)</span>, <span class="math inline">\(\sigma^2_{de} = 25\)</span>, <span class="math inline">\(\phi = 0.01\)</span>.</p></li>
+</ul>
+<p>It would be incorrect to conclude that, based on these parameters, there is a lot of spatial covariance in Set 2 (which has a very large proportion of the overall variance coming from <span class="math inline">\(\sigma^2_{de}\)</span>) while very little spatial covariance in Set 1 (which has a very large proportion of the overall variance coming from <span class="math inline">\(\sigma^2_{ie}\)</span>. In fact, these models are very similar for the set of distances that are in our data.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The moral of this toy example is that <strong>plotting the spatial covariance function on a range of distances observed in the data</strong> is the best way to understand the nature of the spatial correlation in the variable of interest.</p>
+</div>
+</div>
+<p>Note that, for the same exact example, if our observed data was actually observed in a space such that the minimum distance between two locations is 0.001 units and the maximum distance between two locations is 0.01 units, the two models above are now quite different!</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="spatial-covariance_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>So, when interpreting spatial covariance parameters, we must keep the scale of distance in mind.</p>
+</section>
+<section id="sec-stationarity" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="sec-stationarity"><span class="header-section-number">2.4</span> Stationarity</h2>
+<p>The models that we have used for spatial covariance thus far all have an assumption of <strong>second-order stationarity</strong>. A process that satisfies a second-order stationarity assumption has:</p>
+<ol type="1">
+<li><p>A constant mean (so, the mean does not shift from one location to another. In <a href="point-modeling.html"><span>Chapter&nbsp;3</span></a>, we will allow the mean to change as a function of predictor variables, but we will make this stationarity assumption on the error terms in the model, which we will assume have a constant mean of 0).</p></li>
+<li><p>Spatial covariance that depends only on the <strong>distance</strong> and <strong>direction</strong> between two locations.</p></li>
+</ol>
+<p>Second-order stationarity is a very common assumption in the field of spatial statistics. We will assume our data are generated from a second-order stationary process throughout most of these materials.</p>
+<p>Additionally, the models that we used above are <strong>isotropic</strong> models in that the spatial covariance depends only on the <strong>distance</strong> between two spatial locations (and <strong>not</strong> the direction). Models that relax this assumption are called <strong>anisotropic</strong> models and allow the covariance for two locations separated by a distance <span class="math inline">\(h_{ij}\)</span> in the north-south direction to be different than the covariance for two locations separated by the same distance <span class="math inline">\(h_{ij}\)</span> in the east-west direction.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./data-exploration.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Spatial Data Exploration</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./point-modeling.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Modeling Point Data</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Materials for use in conjunction with the <code>spmodel</code> R package.</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">This book was built with <a href="https://quarto.org/">Quarto</a>.</div>
+  </div>
+</footer>
+
+
+
+</body></html>

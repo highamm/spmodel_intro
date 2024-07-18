@@ -1,0 +1,271 @@
+# Spatial Data Exploration {#data-exploration}
+
+```{r}
+#| echo: false
+source("_common.R")
+```
+
+::: {.callout-tip}
+## Goals
+
+* Assess when the use of a spatial model is appropriate.
+* Construct a plot of spatial data.
+* Construct and interpret an empirical semivariogram.
+
+:::
+
+Throughout this section, we will use the `spmodel`, `sf`, and `tidyverse` packages:
+
+```{r}
+#| warning: false
+#| output: false
+library(spmodel)
+library(sf)
+library(tidyverse)
+```
+
+## Introduction to Spatial Data
+
+What exactly makes a spatial analysis an appropriate choice? All data is collected at some location in space, but spatial analysis is useful __if__ we expect that observations that are collected closer together in space are going to be more similar than observations that are collected further apart in space. 
+
+For example, suppose that we have data on sulfate atmospheric deposition (in kg per hectare) in the United States at 197 unique locations in Alaska. In this example, we expect there to be some __spatial correlation__: sulfate depositions should be more similar if they are collected at locations that are near one another. In this example, a spatial analysis of the sulfate data is appropriate. 
+
+In contrast, suppose that we have data on whether or not a professional tennis player wins tournaments that they play throughout the world in a calendar year. While this data is also collected in space (at the courts where the player plays their tournaments), a spatial analysis is less appropriate here. We would expect whether or not the player wins the tournament to be strongly driven by factors like the court surface and the level of the tournament, but we would expect little spatial correlation.
+
+Whether or not spatial analysis is appropriate is not always an easy question. Throughout these course materials, we use examples from fields where spatial analysis is more common, including examples using ecological data, environmental science data, and housing data.
+
+
+<!-- Exercise on data collected at desks not being appropriate for spatial analysis. -->
+
+For our first example, consider again the sulfate data described above. The data, called `sulfate` and stored as a "simple features" `sf` object, can be loaded with
+
+```{r}
+sulfate
+```
+
+An `sf` object is a convenient way to store spatially indexed data in `R`. Examining our `sf` object, we can break down the output line-by-line:
+
+* the first line tells us that there are 197 "features" and 1 "field": this means that there are 197 spatial locations and 1 variable that has been collected at those spatial locations.
+* the `POINT` Geometry type means that the field is recorded at specific points. Another Geometry type is `POLYGON`, which means that each feature is collected at a polygonal area.
+* the Dimension, Bounding box, and Projected CRS (Coordinate Reference System) give some additional spatial information. We will discuss the CRS further in @sec-crs.
+* Finally, the "First 10 features" show the first 10 spatial locations. This part of the output should look familiar to anyone who uses `tibble`s. The primary difference is that there is a column specifically named `geometry` that gives the spatial location of each feature. In this case, since the Geometry type is `POINT` and the Dimension is `XY`, `geometry` gives the `X` and `Y` point coordinates of each feature.
+
+In spatial statistics, we should construct a plot of the response variable at the measured spatial locations. Much like other subfields of statistics, plotting our data is an important first step toward a more formal analysis! We can make a plot of the `sulfate` variable with
+
+```{r}
+ggplot(data = sulfate, aes(colour = sulfate)) +
+  geom_sf() +
+  scale_colour_viridis_c() +
+  theme_void() +
+  labs(colour = "Sulfate (kg per ha)")
+```
+
+Note that, because `sulfate` is an `sf` object, we do not need to specify `x` and `y` coordinates for our plot: these are pulled automatically from the `geometry` of `sulfate` when we use the `geom_sf()` function designed specifically for `sf` data objects.
+
+Based on the plot, is the `sulfate` variable spatially correlated? To make an informal assessment, the question we ask ourselves is generally "Are `sulfate` values more similar for locations closer together than they are for locations further apart?" For this example, we do see that, in general, locations closer together have more similar `sulfate` values. The northeast region of the United States has locations that tend to have high `sulfate` while the western region United States has locations that tend to have lower `sulfate`.
+
+Based on the map, we might say that `sulfate` is "very" spatially correlated. But, "very" is a vague adjective based only on our own subjective assessment. How might we explore the nature of the spatial correlation with a different plot?
+
+## The Empirical Semivariogram
+
+While the plot of the response variable with x and y-coordinates is a useful initial plot for examining spatial data, we might want to contruct a plot to more clearly assess the degree of spatial correlation for a response variable. One common plot made to explore the degree of spatial correlation is the __empirical semivariogram__. Before building the empirical variogram for the `sulfate` variable, we will first build an empirical variogram "from scratch" using a small toy data set consisting of just __4__ observations:
+
+```{r}
+toy_df <- tibble(obs_id = c("A", "B", "C", "D"),
+                 xcoord = c(1, 1, 2, 2), ycoord = c(1, 2, 1, 2),
+                 z = c(9, 7, 6, 1))
+toy_df
+```
+
+There are four variables in `toy_df`:
+
+* `obs_id`, an observation identification letter.
+* `xcoord` and `ycoord`, which give the spatial coordinates of each observation.
+* `z`, a generic response variable collected at each of the four spatial locations.
+
+The x-axis of an empirical semivariogram is the distance, denoted $h$, between data points. The y-axis of an empirical semivariogram is the _semivariance_, defined as the average squared difference between values of `z` for all pairs of locations with the distance $h$, divided by 2. The semivariance, denoted $\gamma$, is a function of the distance, $h$, so it is often written as $\gamma(h)$. For example, the following pairs of observations are a distance of $1$ unit apart: 
+
+* `A` & `B`.
+* `A` & `C`.
+* `B` & `D`.
+* `C` & `D`. 
+
+We take the average squared difference in `z` for each of these pairs and divide the result by 2 to obtain the _semivariance_ value for the semivariogram at the distance $h = 1$:
+
+$$
+\gamma(1) = \frac{1}{2} \cdot \frac{(9 - 7)^2 + (9 - 6)^2 +(7 - 1)^2 + (6 - 1)^2}{4} = 9.25.
+$$
+
+We then repeat this calculation for all unique distances. The only other unique distance left in this small data set is the distance between `A` & `D` and `B` & `C`, both of which are 1.414 units apart. So, the semivariance at distance $h = 1.414$ is
+
+$$
+\gamma(1.414) = \frac{1}{2} \cdot \frac{(9 - 1)^2 + (7 - 6)^2}{2} = 16.25.
+$$
+
+Our toy empirical semivariogram for this very small example looks like:
+
+```{r, echo = FALSE}
+plot_df <- tibble(x = c(1, 1.414), semivariance = c(9.25, 16.25))
+ggplot(data = plot_df, aes(x = x, y = semivariance)) +
+  geom_point() +
+  xlim(c(0, 1.5)) +
+  ylim(c(0, 20)) +
+  xlab("Distance") +
+  theme_minimal()
+```
+
+```{r}
+#| echo: false
+#| output: false
+st_distance(sulfate$geometry) |> as.vector() |> unique() |> length()
+```
+
+For almost any practical example, there are far more pairs of data points than the 6 pairs we used for the toy empirical semivariogram. And, if the points are not in a grid, there are many distances that only have one unique pair. For example, in the `sulfate` data with just 197 spatial locations, there are 19307 unique distance values between points. Therefore, semivariograms are rarely constucted using all unique distances, as was done with the toy example. Instead, empirical semivariograms are almost always constructed by __binning__ distances and calculating the semivariance for all pairs of observations that have a distance that falls into the bin. 
+
+::: {.callout-note}
+
+The binning of distances to create the empirical semivariogram is analagous to the binning of a quantitative variable to create a standard histogram. In both cases, bins usually have same "width", and, in both cases, choosing the number of bins will slightly change the way that the resulting plot looks.
+
+:::
+
+
+A formula for the semivariance is:
+
+$$
+\gamma(h) = \frac{1}{2\cdot \vert N(h) \vert }\sum_{N(h)}(y_i - y_j)^2,
+$$ {#eq-semivariance}
+
+where $N(h)$ is the set of all pairs that fall within a particular distance bin, $\vert N(h) \vert$ is the total number of such pairs, and $y_i$ and $y_j$ denote the response variable for a particular pair of locations $i$ and $j$.
+
+To construct an empirical semivariogram of the `sulfate` variable, we can use the `esv()` function from `spmodel` to perform the binning and calculate the semivariance for all pairs of observations within each distinct bin. The `esv()` function has two required arguments: 
+
+* `data`, either a `data.frame`, `tibble`, or `sf` object and
+* `formula`, a formula that gives the response variable and any predictor variables. 
+
+In this example, we do not have any predictors so the right-hand-side of the formula argument is `1`.
+
+```{r}
+spmodel::esv(formula = sulfate ~ 1, data = sulfate)
+```
+
+The output from `esv()` is a data frame with
+
+* `bins`, a variable that gives the bins. By default, the bins are all of equal width (as are the bins in a standard histogram of a quantitative variable).
+* `dist` is the average distance, in meters, of all of the pairs that fall within the bin.
+* `gamma` is the value of the semivariance, $\gamma(h)$, according to @eq-semivariance.
+* `np` is the _number of points_, $\vert N(h) \vert$ from @eq-semivariance.
+
+For example, the bin from `0` meters to `150000` meters contains all pairs of locations that are between `0` and `150000` meters apart. For each of these `149` pairs, we take the difference in `sulfate` values, square them, and divide by $149 \cdot 2$ to obtain the value for the semivariance (called `gamma` in the output) of `18.0459`.
+
+We can then plot the semivariogram for the `sulfate` variable, where a point in the plot is larger when there are more pairs of distances in the bin, with
+
+```{r}
+semivar_df <- spmodel::esv(sulfate ~ 1, data = sulfate)
+
+ggplot(data = semivar_df, aes(x = dist, y = gamma, size = np)) +
+  geom_point() +
+  ylim(c(0, NA)) +
+  theme_minimal() +
+  labs(x = "Distance (meters)")
+```
+
+### Interpreting the Empirical Semivariogram
+
+In general, a semivariogram with an upward trend indicates that there is spatial correlation in the response variable. Why is this the case? If there is spatial correlation in the response variable, then pairs of observations with smaller distances (that are closer together) will tend to have response variable measurements that are more similar, which leads to smaller squared differences in the variable of interest, which leads to a smaller semivariance value. On the other hand, pairs of observations with larger distances (that are further apart) will tend to have response variable measurements that are less similar, which leads to larger squared differences in the response variable, which leads to a larger semivariance value. 
+
+We see that there is indeed evidence of a lot of spatial correlation in the sulfate variable: the semivariance is quite small for smaller distances and increases for larger distances. Unlike histograms, where the bins are explicitly shown, empirical semivariograms typically only show points corresponding to the semivariance at different distances. In this example, the total number of bins is 15.
+
+A semivariogram without an upward trend indicates little to no spatial correlation; in this case, the average squared differences are similar no matter what the distance between the points is. A semivariogram with a downward trend is more rare; such a semivariogram would indicate that locations closer together tend to be _less similar_ (with values for the variable of interest that are very different from one another) than locations that are further apart.
+
+Because of the squared difference term in the numerator of @eq-semivariance, the calculation of the empirical semivariance is sensitive to large outliers. Therefore, in addition to a spatial map of a variable and an empirical semivariogram, exploration of the response variable with a standard histogram (or other graph for exploring a single quantitative variable) is useful. In general, for `sf` objects, we can use geoms like `geom_histogram()` in the same way that we use them for `data.frame` objects and/or `tibble`s:
+
+```{r}
+ggplot(data = sulfate, aes(x = sulfate)) +
+  geom_histogram(colour = "black", fill = "white", bins = 15) +
+  theme_minimal() +
+  labs(x = "Sulfate (kg per ha)")
+```
+
+Here, we see that the distribution of the `sulfate` variable is moderately right-skewed, but there are no extreme outliers present. If there was an extreme outlier, we might consider making an empirical semivariogram with the outlier in the data and without the outlier so that we can determine if the outlier has a strong effect on the plot.
+
+## More on `sf` Objects
+
+So far, we have explored the `sulfate` data with both a plot of the `sulfate` variable at the 197 locations where it was collected and an empirical semivariogram plot, which is a commonly used exploratory plot for spatial data. We now turn our attention to a very short introduction of `sf` (simple features) objects, we will use quite heavily throughout these materials. In this subsection, we will gain a little bit more familiarity with these objects. However, there is a lot more to learn about the `sf` package not presented here, and we encourage any interested reader to examine the `sf` package vignettes found at <https://r-spatial.github.io/sf/articles/sf1.html>. 
+
+The `sf` package in `R` can store objects with spatial information as `sf` simple feature objects. While we will not review simple feature objects or the `sf` package in depth, we will discuss a couple of important components of `sf` objects.
+
+### Geometry Type
+
+The two geometry types that we will encounter throughout these materials are `POINT` geometries and `POLYGON` geometries, though other types can be found at <https://r-spatial.github.io/sf/articles/sf1.html#simple-feature-geometry-types>.
+
+The `POLYGON` geometry type provides polygonal boundaries for each spatial location. An example of an `sf` object with `POLYGON` `geometry` is the `seal` data in the `spmodel` package:
+
+```{r}
+seal
+```
+
+The `geometry` column shows a series of points for each row; these points can be connected with line segments to form a polygon. Data on these seals were collected in polygon areas, not at specific points, so a `POLYGON` geometry makes more sense for this data.
+
+### Converting `data.frame` to `sf`
+
+If we have a `data.frame` object that we wish to convert to an `POINT` referenced `sf` object, we can use the `st_as_sf()` function from the `sf` package. For example, the `caribou` data frame in `spmodel` is of class `data.frame`, but has columns for spatial coordinates called `x` and `y`:
+
+```{r}
+caribou
+```
+
+We can convert the `caribou` data frame to an `sf` object using the `st_as_sf()` function from the `sf` package, providing the column names for the spatial coordinates as an argument to `coords`:
+
+```{r}
+caribou_sf <- caribou |> sf::st_as_sf(coords = c("x", "y"))
+caribou_sf
+```
+
+Now, `caribou_sf`, has a `geometry` column and is of class `sf`:
+
+```{r}
+class(caribou_sf)
+```
+
+Note that, in most cases, we can use `dplyr` functions on `sf` objects in the same way we use them on `data.frame` objects or `tibble` objects because `sf` objects are also of class `data.frame` and `tbl`:
+
+```{r}
+#| output: false
+caribou |> filter(water == "Y")
+caribou_sf |> filter(water == "Y")
+
+caribou |> mutate(water_tarp = interaction(water, tarp))
+caribou_sf |> mutate(water_tarp = interaction(water, tarp))
+```
+
+### CRS {#sec-crs}
+
+Finally, an `sf` object has a Coordinate Reference System (`CRS`). A coordinate reference system is used to project the data collected on Earth's sphere to a 2-dimensional plane. A common CRS for data collected in the United States is the `NAD83 / Conus Albers` projection. This projection is what is used for the `sulfate` data:
+
+```{r}
+sulfate
+```
+
+We will not discuss the details of choosing an appropriate Coordinate Reference System here, but the _Modern Data Science with R_ textbook provides a brief introduction to Coordinate Reference Systems: <https://mdsr-book.github.io/mdsr2e/ch-spatial.html#sec:projections>. Though we do not have the space to discuss CRS's here, choosing an appropriate CRS for your data __is__ quite important. Much of the data that we use in future sections is data collected in the United States, where the most commonly used CRS is based off of the `NAD83 / Albers` projection. 
+
+To show why choosing an appropriate CRS is important, we can observe how a different projection might distort spatial locations by comparing a the `NAD83 / Albers` projection of the `sulfate` data with the `WGS 84 / Pseudo-Mercator` projection:
+
+```{r}
+## define a different CRS for sulfate data
+sulfate_wgs <- sf::st_transform(sulfate, crs = 3857) 
+
+## original (good) projection
+ggplot(data = sulfate, aes(colour = sulfate)) +
+  geom_sf() +
+  theme_void() +
+  scale_colour_viridis_c()
+
+## new (bad) projection
+ggplot(data = sulfate_wgs, aes(colour = sulfate)) +
+  geom_sf() +
+  theme_void() +
+  scale_colour_viridis_c()
+```
+
+We see that, for the new (inappropriate) projection, the `sulfate` locations now look different, with the locations in the northeastern United States getting "stretched" so that the coordinates bare much less resemblance to the continental United States.
+

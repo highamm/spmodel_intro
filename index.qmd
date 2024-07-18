@@ -1,0 +1,39 @@
+# Preface {.unnumbered}
+
+The goals of this book are to:
+
+1. Provide a light introduction to the concepts behind spatial modeling.
+
+2. Provide tools to fit these introductory spatial models by showing how to use the `spmodel` `R` package.
+
+There are already many fantastic resources for learning about spatial statistics. These materials are intended for anyone making their first foray into the field. With that in mind, we introduce any necessary probability concepts (such as random variables, covariance, etc.) as well as any necessary matrix algebra concepts (such as the matrix inverse) along the way. Additionally, while we use the `tidyverse` suite of packages in `R` and we provide all code, we do not attempt to teach how to best use the `tidyverse`: there are already so many fantastic resources for doing so.
+
+Before reading these materials, a reader should be able to fit and interpret the results from a multiple regression analysis with independent random errors. As a few examples, prior to reading these materials, a reader should be able to:
+
+* Interpret the fitted slope and intercept of a linear regression model.
+* State the assumptions needed for regression and how to assess the plausibility of those assumptions.
+* Interpret a p-value from a hypothesis test.
+* Interpret a confidence interval for one of the regression coefficients.
+
+After reading these materials, a reader should be able to:
+
+* Assess when the use of a spatial model is appropriate.
+* Construct a plot of spatial data and interpret an empirical semivariogram.
+* Identify a few common functions used to model spatial covariance.
+* Explain the difference between spatial covariance and spatial correlation.
+* Interpret the following spatial covariance parameters: partial sill, range, nugget.
+* Write out the spatial linear model with correlated random errors.
+* Using `spmodel`'s `splm()` function, fit a spatial model to a data set. Using the fitted model, obtain and interpret:
+    * a summary table of model output, obtained with `tidy()`.
+    * a summary table of covariance parameter estimates, obtained with `tidy()`.
+    * model fit statistics, obtained with `glance()` and `glances()`.
+    * fitted values and residuals, obtained with `augment()`.
+* State and assess the assumptions of a spatial linear model.
+* Construct a prediction for the response variable at an unobserved spatial location.
+* Explain some of the intuition behind how spatial information is used to construct predictions.
+* Identify an appropriate situation to use a spatial logistic regression model.
+* Fit and interpret a spatial logistic regression model.
+* Explain the difference between spatial point data and spatial polygon data.
+* Fit and interpret a spatial autoregressive model to spatial polygon data.
+
+<br>
