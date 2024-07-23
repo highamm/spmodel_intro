@@ -51,7 +51,7 @@ The `geom` column in `africa_cont` contains "directions" for how `R` should draw
 
 Analyzing spatial data where each observation is collected at a particular __point__ in space is sometimes called _geostatistical analysis_. We have performed geostatistical analysis for all examples prior to this one. With this data set, life expectancy is collected across an entire area (a country) so we now have __areal__ data. 
 
-Sometimes, geostatistical analysis is still performed on areal data, by using the __centroid__ of each polygon as a substitute for "point-level" coordinates. The `moose` data set used in @logistic-modeling is one such example: moose presence is observed on a polygonal area but the data we have only contains the centroid of each polygon. More often, however, the autoregressive models that we discuss next are used for this type of data if we have information on the entire polygon, not just the centroid.
+Sometimes, geostatistical analysis is still performed on areal data, by using the __centroid__ of each polygon as a substitute for "point-level" coordinates. The `moose` data set used in @sec-logistic-modeling is one such example: moose presence is observed on a polygonal area but the data we have only contains the centroid of each polygon. More often, however, the autoregressive models that we discuss next are used for this type of data if we have information on the entire polygon, not just the centroid.
 
 We also see from the plot that there are two countries in Africa (Western Sahara and Somaliland) for which we do not have values of life expectancy in the data: 
 
@@ -135,15 +135,15 @@ Note that the specification above does not have an independent error term $\epsi
 So, what exactly is this covariance matrix $\boldsymbol{\Sigma}$ in a CAR model? As alluded to earlier, for autoregressive models, we do not model the covariance matrix $\boldsymbol{\Sigma}$ directly; instead, we model the inverse of the covariance matrix, sometimes called the __precision matrix__:
 
 $$
-\boldsymbol{\Sigma}^{-1} = (\boldsymbol{I} - \rho \boldsymbol{W}) / \sigma^2_{de},
+\boldsymbol{\Sigma}^{-1} = (\mathbf{I} - \rho \mathbf{W}) / \sigma^2_{de},
 $$
 
-where $\boldsymbol{W}$ is the weight matrix discussed previously, $\boldsymbol{I}$ is a matrix that has all 1's on the diagonal and 0's on all of the off-diagonals, $\sigma^2_{de}$ is the dependent error variance parameter, $\rho$ is the range parameter, and the $-1$ denotes a matrix inverse. A matrix inverse to a matrix $\mathbf{A}$ is the matrix such that multiplying $\mathbf{A}\mathbf{A}^{-1}$ gives a matrix with all 1's on the diagonal and 0's on all of the off-diagonals (the identity matrix). The idea is similar to the inverse of a scalar number: the inverse of the number $5$ for example is equal to $\frac{1}{5}$ because $5 \cdot \frac{1}{5} = 1$. 
+where $\mathbf{W}$ is the weight matrix discussed previously, $\mathbf{I}$ is a matrix that has all 1's on the diagonal and 0's on all of the off-diagonals, $\sigma^2_{de}$ is the dependent error variance parameter, $\rho$ is the range parameter, and the $-1$ denotes a matrix inverse. A matrix inverse to a matrix $\mathbf{A}$ is the matrix such that multiplying $\mathbf{A}\mathbf{A}^{-1}$ gives a matrix with all 1's on the diagonal and 0's on all of the off-diagonals (the identity matrix). The idea is similar to the inverse of a scalar number: the inverse of the number $5$ for example is equal to $\frac{1}{5}$ because $5 \cdot \frac{1}{5} = 1$. 
 
 Then, the covariance matrix is:
 
 $$
-\boldsymbol{\Sigma} = \sigma^2_{de}(\boldsymbol{I} - \rho \boldsymbol{W})^{-1}.
+\boldsymbol{\Sigma} = \sigma^2_{de}(\mathbf{I} - \rho \mathbf{W})^{-1}.
 $$
 
 Again, intuition about what this covariance matrix will end up looking like is quite challenging. But, we should expect that:

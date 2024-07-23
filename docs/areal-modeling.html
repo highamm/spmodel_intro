@@ -300,7 +300,7 @@ Goals
 </div>
 <p>The <code>geom</code> column in <code>africa_cont</code> contains “directions” for how <code>R</code> should draw each polygon by providing a long list of coordinates to connect with lines to form the polygons for each country.</p>
 <p>Analyzing spatial data where each observation is collected at a particular <strong>point</strong> in space is sometimes called <em>geostatistical analysis</em>. We have performed geostatistical analysis for all examples prior to this one. With this data set, life expectancy is collected across an entire area (a country) so we now have <strong>areal</strong> data.</p>
-<p>Sometimes, geostatistical analysis is still performed on areal data, by using the <strong>centroid</strong> of each polygon as a substitute for “point-level” coordinates. The <code>moose</code> data set used in <span class="citation" data-cites="logistic-modeling">(<a href="#ref-logistic-modeling" role="doc-biblioref"><strong>logistic-modeling?</strong></a>)</span> is one such example: moose presence is observed on a polygonal area but the data we have only contains the centroid of each polygon. More often, however, the autoregressive models that we discuss next are used for this type of data if we have information on the entire polygon, not just the centroid.</p>
+<p>Sometimes, geostatistical analysis is still performed on areal data, by using the <strong>centroid</strong> of each polygon as a substitute for “point-level” coordinates. The <code>moose</code> data set used in <a href="logistic-modeling.html"><span>Chapter&nbsp;6</span></a> is one such example: moose presence is observed on a polygonal area but the data we have only contains the centroid of each polygon. More often, however, the autoregressive models that we discuss next are used for this type of data if we have information on the entire polygon, not just the centroid.</p>
 <p>We also see from the plot that there are two countries in Africa (Western Sahara and Somaliland) for which we do not have values of life expectancy in the data:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>africa_cont <span class="sc">|&gt;</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(lifeExp)) <span class="sc">|&gt;</span> <span class="fu">pull</span>(name_long)</span>
@@ -369,12 +369,12 @@ Y_i = \beta_0 + \tau_i,
 <p>Note that the specification above does not have an independent error term <span class="math inline">\(\epsilon_i\)</span>: one can be included, but many CAR models do not contain an independent error term.</p>
 <p>So, what exactly is this covariance matrix <span class="math inline">\(\boldsymbol{\Sigma}\)</span> in a CAR model? As alluded to earlier, for autoregressive models, we do not model the covariance matrix <span class="math inline">\(\boldsymbol{\Sigma}\)</span> directly; instead, we model the inverse of the covariance matrix, sometimes called the <strong>precision matrix</strong>:</p>
 <p><span class="math display">\[
-\boldsymbol{\Sigma}^{-1} = (\boldsymbol{I} - \rho \boldsymbol{W}) / \sigma^2_{de},
+\boldsymbol{\Sigma}^{-1} = (\mathbf{I} - \rho \mathbf{W}) / \sigma^2_{de},
 \]</span></p>
-<p>where <span class="math inline">\(\boldsymbol{W}\)</span> is the weight matrix discussed previously, <span class="math inline">\(\boldsymbol{I}\)</span> is a matrix that has all 1’s on the diagonal and 0’s on all of the off-diagonals, <span class="math inline">\(\sigma^2_{de}\)</span> is the dependent error variance parameter, <span class="math inline">\(\rho\)</span> is the range parameter, and the <span class="math inline">\(-1\)</span> denotes a matrix inverse. A matrix inverse to a matrix <span class="math inline">\(\mathbf{A}\)</span> is the matrix such that multiplying <span class="math inline">\(\mathbf{A}\mathbf{A}^{-1}\)</span> gives a matrix with all 1’s on the diagonal and 0’s on all of the off-diagonals (the identity matrix). The idea is similar to the inverse of a scalar number: the inverse of the number <span class="math inline">\(5\)</span> for example is equal to <span class="math inline">\(\frac{1}{5}\)</span> because <span class="math inline">\(5 \cdot \frac{1}{5} = 1\)</span>.</p>
+<p>where <span class="math inline">\(\mathbf{W}\)</span> is the weight matrix discussed previously, <span class="math inline">\(\mathbf{I}\)</span> is a matrix that has all 1’s on the diagonal and 0’s on all of the off-diagonals, <span class="math inline">\(\sigma^2_{de}\)</span> is the dependent error variance parameter, <span class="math inline">\(\rho\)</span> is the range parameter, and the <span class="math inline">\(-1\)</span> denotes a matrix inverse. A matrix inverse to a matrix <span class="math inline">\(\mathbf{A}\)</span> is the matrix such that multiplying <span class="math inline">\(\mathbf{A}\mathbf{A}^{-1}\)</span> gives a matrix with all 1’s on the diagonal and 0’s on all of the off-diagonals (the identity matrix). The idea is similar to the inverse of a scalar number: the inverse of the number <span class="math inline">\(5\)</span> for example is equal to <span class="math inline">\(\frac{1}{5}\)</span> because <span class="math inline">\(5 \cdot \frac{1}{5} = 1\)</span>.</p>
 <p>Then, the covariance matrix is:</p>
 <p><span class="math display">\[
-\boldsymbol{\Sigma} = \sigma^2_{de}(\boldsymbol{I} - \rho \boldsymbol{W})^{-1}.
+\boldsymbol{\Sigma} = \sigma^2_{de}(\mathbf{I} - \rho \mathbf{W})^{-1}.
 \]</span></p>
 <p>Again, intuition about what this covariance matrix will end up looking like is quite challenging. But, we should expect that:</p>
 <ol type="1">
@@ -481,10 +481,10 @@ Y_i = \beta_0 + \tau_i,
 <p>and we can glance at model summary statistics with:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glance</span>(mod_car)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 1 × 9</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="do">##       n     p  npar value   AIC  AICc logLik deviance pseudo.r.squared</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;            &lt;dbl&gt;</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="do">## 1    48     1     2  296.  300.  300.  -148.     46.8                0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 1 × 10</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="do">##       n     p  npar value   AIC  AICc   BIC logLik deviance pseudo.r.squared</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;            &lt;dbl&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="do">## 1    48     1     2  296.  300.  300.  304.  -148.     46.8                0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can also obtain diagnostic statistics with:</p>
 <div class="cell">

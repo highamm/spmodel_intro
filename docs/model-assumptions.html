@@ -578,14 +578,15 @@ Important
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">spcov_type =</span> <span class="fu">c</span>(<span class="st">"exponential"</span>, <span class="st">"gaussian"</span>, <span class="st">"spherical"</span>,</span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"matern"</span>, <span class="st">"none"</span>))</span>
 <span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glances</span>(many_mods)</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 5 × 10</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="do">##   model         n     p  npar value   AIC  AICc logLik deviance pseudo.r.squared</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;            &lt;dbl&gt;</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 spherical   211     5     3 1715. 1721. 1721.  -857.     206.            0.337</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 exponent…   211     5     3 1715. 1721. 1721.  -857.     206.            0.339</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 gaussian    211     5     3 1722. 1728. 1729.  -861.     206.            0.352</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 matern      211     5     4 1721. 1729. 1729.  -860.     206.            0.346</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 none        211     5     1 1794. 1796. 1796.  -897.     206             0.502</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 5 × 11</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="do">##   model           n     p  npar value   AIC  AICc   BIC logLik deviance</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;       &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 spherical     211     5     3 1715. 1721. 1721. 1731.  -857.     206.</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 exponential   211     5     3 1715. 1721. 1721. 1731.  -857.     206.</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 gaussian      211     5     3 1722. 1728. 1729. 1739.  -861.     206.</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 matern        211     5     4 1721. 1729. 1729. 1742.  -860.     206.</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 none          211     5     1 1794. 1796. 1796. 1799.  -897.     206 </span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: pseudo.r.squared &lt;dbl&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We observe something common in spatial analysis here: choosing to use a spatial covariance function in the first place is much more important than which particular covariance function is chosen. In other words, we see that the model with <code>none</code> covariance has a much higher AIC than the other models: this model clearly provides the worst fit to the data of the 5 chocies. Then, while the <code>spherical</code> and <code>exponential</code> slightly outperform the <code>gaussian</code> and <code>matern</code> for this example, all four remaining models have similar AIC values. Additionally, if we examine the model summary output for some of the models with</p>
 <div class="cell">

@@ -1,4 +1,4 @@
-# Spatial Logistic Regression {#logistic-modeling}
+# Spatial Logistic Regression {#sec-logistic-modeling}
 
 ```{r}
 #| echo: false
@@ -185,10 +185,8 @@ augment(mod_spatial)
 
 Note that, in the augmented output, the `.fitted` column gives fitted values __on the log odds scale__. If we want these to be on the probability scale, we can either add an argument to augment:
 
-CHANGE THIS ONCE I HEAR BACK FROM MIKE:
-
 ```{r}
-augment(mod_spatial, type = "response")
+augment(mod_spatial, type.predict = "response")
 ```
 
 Or, we can backtransform manually using the fact that:
@@ -198,7 +196,8 @@ $$
 $${#eq-backtransform}
 
 ```{r}
-## put mutate statement here!
+augment(mod_spatial) |> mutate(.fitted_back = exp(.fitted) / (1 + exp(.fitted))) |>
+  relocate(.fitted_back)
 ```
 
 ```{r}
@@ -254,11 +253,11 @@ augment(mod_spatial, newdata = moose_preds)
 predict(mod_spatial, newdata = moose_preds)
 ```
 
-While `augment()` returns the predicted log odds of presence in a data frame, `predict()` returns the predicted log odds of presence as a vector. If we want the predictions on the probability scale, we can either backtransform the log odds manually using @eq-backtransform, or, we can provide a `type = "response"` argument to `augment()` or `predict()`:
+While `augment()` returns the predicted log odds of presence in a data frame, `predict()` returns the predicted log odds of presence as a vector. If we want the predictions on the probability scale, we can either backtransform the log odds manually using @eq-backtransform, or, we can provide a `type.predict = "response"` argument to `augment()` or `predict()`:
 
 ```{r}
 ## shown for augment() only
-aug_pred <- augment(mod_spatial, newdata = moose_preds, type = "response")
+aug_pred <- augment(mod_spatial, newdata = moose_preds, type.predict = "response")
 ```
 
 Below, we plot the predicted probabilities:

@@ -222,7 +222,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span id="logistic-modeling" class="quarto-section-identifier"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Spatial Logistic Regression</span></span></h1>
+<h1 class="title"><span id="sec-logistic-modeling" class="quarto-section-identifier"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Spatial Logistic Regression</span></span></h1>
 </div>
 
 
@@ -423,10 +423,10 @@ Y_i =
 <p>We can glance at the model for some quick summary statistics:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glance</span>(mod_spatial)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 1 × 9</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="do">##       n     p  npar value   AIC  AICc logLik deviance pseudo.r.squared</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;            &lt;dbl&gt;</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## 1   218     3     3  676.  682.  683.  -338.     176.           0.0627</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 1 × 10</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="do">##       n     p  npar value   AIC  AICc   BIC logLik deviance pseudo.r.squared</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;            &lt;dbl&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="do">## 1   218     3     3  676.  682.  683.  693.  -338.     176.           0.0627</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>And, we can augment the model for model diagnostics that we can use to make diagnostic plots:</p>
 <div class="cell">
@@ -439,19 +439,18 @@ Y_i =
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 218 × 9</span></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   presence  elev strat .fitted .resid    .hat  .cooksd .std.resid</span></span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="do">## * &lt;fct&gt;    &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 0         469. L      0.125  -0.516 0.0476  0.00465      -0.528</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 0         362. L      0.0630 -0.361 0.0123  0.000548     -0.363</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 0         173. M      0.124  -0.514 0.00455 0.000405     -0.516</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 0         280. L      0.0412 -0.290 0.00413 0.000117     -0.291</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 0         620. L      0.233  -0.728 0.168   0.0427       -0.798</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 6 0         164. M      0.153  -0.576 0.00534 0.000598     -0.578</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 0         469. L       -1.95 -0.516 0.0476  0.00465      -0.528</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 0         362. L       -2.70 -0.361 0.0123  0.000548     -0.363</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 0         173. M       -1.96 -0.514 0.00455 0.000405     -0.516</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 0         280. L       -3.15 -0.290 0.00413 0.000117     -0.291</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 5 0         620. L       -1.19 -0.728 0.168   0.0427       -0.798</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 6 0         164. M       -1.71 -0.576 0.00534 0.000598     -0.578</span></span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 212 more rows</span></span>
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: geometry &lt;POINT [m]&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Note that, in the augmented output, the <code>.fitted</code> column gives fitted values <strong>on the log odds scale</strong>. If we want these to be on the probability scale, we can either add an argument to augment:</p>
-<p>CHANGE THIS ONCE I HEAR BACK FROM MIKE:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(mod_spatial, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(mod_spatial, <span class="at">type.predict =</span> <span class="st">"response"</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Simple feature collection with 218 features and 8 fields</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Geometry type: POINT</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Dimension:     XY</span></span>
@@ -474,7 +473,24 @@ Y_i =
 \pi_i = \frac{e^{\text{logodds}(\pi_i)}}{1 + e^{\text{logodds}(\pi_i)}}
 \tag{6.4}\]</span></span></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="do">## put mutate statement here!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(mod_spatial) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">.fitted_back =</span> <span class="fu">exp</span>(.fitted) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(.fitted))) <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(.fitted_back)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Simple feature collection with 218 features and 9 fields</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Geometry type: POINT</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Dimension:     XY</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Bounding box:  xmin: 269085 ymin: 1416151 xmax: 419057.4 ymax: 1541016</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Projected CRS: NAD83 / Alaska Albers</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 218 × 10</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="do">##   .fitted_back presence  elev strat .fitted .resid    .hat  .cooksd .std.resid</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="do">##          &lt;dbl&gt; &lt;fct&gt;    &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 1       0.125  0         469. L       -1.95 -0.516 0.0476  0.00465      -0.528</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 2       0.0630 0         362. L       -2.70 -0.361 0.0123  0.000548     -0.363</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 3       0.124  0         173. M       -1.96 -0.514 0.00455 0.000405     -0.516</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 4       0.0412 0         280. L       -3.15 -0.290 0.00413 0.000117     -0.291</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 5       0.233  0         620. L       -1.19 -0.728 0.168   0.0427       -0.798</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 6       0.153  0         164. M       -1.71 -0.576 0.00534 0.000598     -0.578</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 212 more rows</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: geometry &lt;POINT [m]&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="prediction" class="level2" data-number="6.4">
@@ -566,10 +582,10 @@ Y_i =
 <span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="do">##          97          98          99         100 </span></span>
 <span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="do">## -0.24654727 -1.63627214 -1.06809835  0.01457089</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>While <code>augment()</code> returns the predicted log odds of presence in a data frame, <code>predict()</code> returns the predicted log odds of presence as a vector. If we want the predictions on the probability scale, we can either backtransform the log odds manually using <a href="#eq-backtransform">Equation&nbsp;<span>6.4</span></a>, or, we can provide a <code>type = "response"</code> argument to <code>augment()</code> or <code>predict()</code>:</p>
+<p>While <code>augment()</code> returns the predicted log odds of presence in a data frame, <code>predict()</code> returns the predicted log odds of presence as a vector. If we want the predictions on the probability scale, we can either backtransform the log odds manually using <a href="#eq-backtransform">Equation&nbsp;<span>6.4</span></a>, or, we can provide a <code>type.predict = "response"</code> argument to <code>augment()</code> or <code>predict()</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="do">## shown for augment() only</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>aug_pred <span class="ot">&lt;-</span> <span class="fu">augment</span>(mod_spatial, <span class="at">newdata =</span> moose_preds, <span class="at">type =</span> <span class="st">"response"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>aug_pred <span class="ot">&lt;-</span> <span class="fu">augment</span>(mod_spatial, <span class="at">newdata =</span> moose_preds, <span class="at">type.predict =</span> <span class="st">"response"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Below, we plot the predicted probabilities:</p>
 <div class="cell">

@@ -515,13 +515,14 @@ e_i = y_i - \hat{y}_i,
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">spcov_type =</span> <span class="fu">c</span>(<span class="st">"none"</span>, <span class="st">"exponential"</span>, <span class="st">"spherical"</span>, <span class="st">"gaussian"</span>))</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">glances</span>(many_mods)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 4 × 10</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="do">##   model         n     p  npar value   AIC  AICc logLik deviance pseudo.r.squared</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;     &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;            &lt;dbl&gt;</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 none         30     4     1 -1.68 0.323 0.466  0.838     26              0.277</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 exponent…    30     4     3 -5.85 0.150 1.07   2.92      26.0            0.396</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 spherical    30     4     3 -5.84 0.155 1.08   2.92      26.0            0.395</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 gaussian     30     4     3 -5.69 0.314 1.24   2.84      26.0            0.385</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 4 × 11</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="do">##   model           n     p  npar value   AIC  AICc   BIC logLik deviance</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;       &lt;int&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 none           30     4     1 -1.68 0.323 0.466  1.72  0.838     26  </span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="do">## 2 exponential    30     4     3 -5.85 0.150 1.07   4.35  2.92      26.0</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="do">## 3 spherical      30     4     3 -5.84 0.155 1.08   4.36  2.92      26.0</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 4 gaussian       30     4     3 -5.69 0.314 1.24   4.52  2.84      26.0</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="do">## # ℹ 1 more variable: pseudo.r.squared &lt;dbl&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>In the code above, <code>spcov_type</code> is a vector of possible covariance functions. Each different covariance function is fit as a model for the errors. Setting <code>spcov_type</code> to <code>"none"</code> tells <code>splm()</code> to not use any spatial covariance and to just fit a regression model with independent random errors. we then use <code>glances()</code> to compare AIC for the fitted models. We see that, while the exponential model has a slightly lower AIC than the others, an independent error model fits almost as well and actually has a lower AICc value.</p>
 <p>In this section, we have fit and interpreted a formal spatial model using a data set on caribou as our example. In the next section, we turn our attention to the assumptions we need to make to fit such a model.</p>
